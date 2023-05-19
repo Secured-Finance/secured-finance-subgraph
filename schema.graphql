@@ -27,7 +27,6 @@ type Order @entity {
   maturity: BigInt!
   unitPrice: BigInt!
   amount: BigInt!
-  filledAmount: BigInt!
   status: OrderStatus!
   lendingMarket: LendingMarket!
 
