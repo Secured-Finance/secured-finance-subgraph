@@ -14,6 +14,7 @@ import {
     initOrUpdateTransactionCandleStick,
     initOrder,
     initTransaction,
+    updateTransactionStats,
 } from '../helper/initializer';
 import { getOrderEntityId } from '../utils/id-generation';
 
@@ -213,6 +214,12 @@ export function handlePositionUnwound(event: PositionUnwound): void {
                 BigInt.fromI32(intervals[i])
             );
         }
+        // TODO: check if this needs to be added in other handlers
+        updateTransactionStats(
+            event.params.ccy,
+            event.params.maturity,
+            event.block.timestamp
+        );
     }
 }
 
