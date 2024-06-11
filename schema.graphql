@@ -169,6 +169,6 @@ type TransactionStats @entity {
   currency: Bytes!
   maturity: BigInt!
   priceChange: BigInt
-  percentageChange: BigDecimal!
+  percentageChange: BigDecimal
   container: TransactionStatsContainer!
 }
