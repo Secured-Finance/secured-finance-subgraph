@@ -14,6 +14,8 @@ import {
     Protocol,
     Transaction,
     TransactionCandleStick,
+    TransactionStats,
+    TransactionStatsContainer,
     Transfer,
     User,
 } from '../../generated/schema';
@@ -275,6 +277,66 @@ export const initTransfer = (
     user.transferCount = user.transferCount.plus(BigInt.fromI32(1));
     user.save();
 };
+
+export function updateTransactionStats(
+    currency: Bytes,
+    maturity: BigInt,
+    currentTimestamp: BigInt
+): void {
+    const currentCandleStickId = getTransactionCandleStickEntityId(
+        currency,
+        maturity,
+        BigInt.fromI32(86400), // 1 day interval
+        currentTimestamp.div(BigInt.fromI32(86400))
+    );
+    const currentCandleStick =
+        TransactionCandleStick.load(currentCandleStickId);
+
+    if (currentCandleStick) {
+        const previousTimestamp = currentTimestamp.minus(BigInt.fromI32(86400));
+        const previousCandleStickId = getTransactionCandleStickEntityId(
+            currency,
+            maturity,
+            BigInt.fromI32(86400), // 1 day interval
+            previousTimestamp.div(BigInt.fromI32(86400))
+        );
+        const previousCandleStick = TransactionCandleStick.load(
+            previousCandleStickId
+        );
+
+        if (previousCandleStick) {
+            const currentPrice = currentCandleStick.close;
+            const previousPrice = previousCandleStick.close;
+
+            const priceChange = currentPrice.minus(previousPrice);
+            const percentageChange = priceChange
+                .times(BigInt.fromI32(10000))
+                .div(previousPrice);
+
+            const containerId = 'CONTAINER';
+            let container = TransactionStatsContainer.load(containerId);
+
+            if (!container) {
+                container = new TransactionStatsContainer(containerId);
+            }
+
+            const statsId = currency.toHexString() + '-' + maturity.toString();
+            let stats = TransactionStats.load(statsId);
+
+            if (!stats) {
+                stats = new TransactionStats(statsId);
+                stats.currency = currency;
+                stats.maturity = maturity;
+                stats.container = container.id;
+                stats.save();
+            }
+
+            stats.priceChange = priceChange;
+            stats.percentageChange = percentageChange.toBigDecimal();
+            stats.save();
+        }
+    }
+}
 
 export const initOrUpdateTransactionCandleStick = (
     currency: Bytes,
