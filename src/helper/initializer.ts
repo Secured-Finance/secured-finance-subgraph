@@ -6,6 +6,8 @@ import {
     log,
 } from '@graphprotocol/graph-ts';
 import {
+    DailyTransactionStats,
+    DailyTransactionStatsContainer,
     DailyVolume,
     Deposit,
     LendingMarket,
@@ -14,8 +16,6 @@ import {
     Protocol,
     Transaction,
     TransactionCandleStick,
-    TransactionStats,
-    TransactionStatsContainer,
     Transfer,
     User,
 } from '../../generated/schema';
@@ -278,7 +278,7 @@ export const initTransfer = (
     user.save();
 };
 
-export function updateTransactionStats(
+export function initOrUpdateDailyTransactionStats(
     currency: Bytes,
     maturity: BigInt,
     currentTimestamp: BigInt
@@ -286,56 +286,47 @@ export function updateTransactionStats(
     const currentCandleStickId = getTransactionCandleStickEntityId(
         currency,
         maturity,
-        BigInt.fromI32(86400), // 1 day interval
+        BigInt.fromI32(86400), // 24 hours in seconds
         currentTimestamp.div(BigInt.fromI32(86400))
     );
     const currentCandleStick =
         TransactionCandleStick.load(currentCandleStickId);
 
-    if (currentCandleStick) {
-        const previousTimestamp = currentTimestamp.minus(BigInt.fromI32(86400));
-        const previousCandleStickId = getTransactionCandleStickEntityId(
-            currency,
-            maturity,
-            BigInt.fromI32(86400), // 1 day interval
-            previousTimestamp.div(BigInt.fromI32(86400))
-        );
-        const previousCandleStick = TransactionCandleStick.load(
-            previousCandleStickId
-        );
+    const containerId = 'TRANSACTION_STATS_CONTAINER';
+    let container = DailyTransactionStatsContainer.load(containerId);
 
-        if (previousCandleStick) {
-            const currentPrice = currentCandleStick.close;
-            const previousPrice = previousCandleStick.close;
-
-            const priceChange = currentPrice.minus(previousPrice);
-            const percentageChange = priceChange
-                .times(BigInt.fromI32(10000))
-                .div(previousPrice);
-
-            const containerId = 'CONTAINER';
-            let container = TransactionStatsContainer.load(containerId);
-
-            if (!container) {
-                container = new TransactionStatsContainer(containerId);
-            }
-
-            const statsId = currency.toHexString() + '-' + maturity.toString();
-            let stats = TransactionStats.load(statsId);
-
-            if (!stats) {
-                stats = new TransactionStats(statsId);
-                stats.currency = currency;
-                stats.maturity = maturity;
-                stats.container = container.id;
-                stats.save();
-            }
-
-            stats.priceChange = priceChange;
-            stats.percentageChange = percentageChange.toBigDecimal();
-            stats.save();
-        }
+    if (!container) {
+        container = new DailyTransactionStatsContainer(containerId);
+        container.save();
     }
+
+    const statsId = currency.toHexString() + '-' + maturity.toString();
+    let stats = DailyTransactionStats.load(statsId);
+
+    if (!stats) {
+        stats = new DailyTransactionStats(statsId);
+    }
+
+    stats.currency = currency;
+    stats.maturity = maturity;
+    stats.container = container.id;
+    stats.timestamp = currentTimestamp;
+
+    if (currentCandleStick) {
+        stats.open = currentCandleStick.open;
+        stats.close = currentCandleStick.close;
+        stats.change = currentCandleStick.close.minus(currentCandleStick.open);
+        stats.percentageChange = stats.change
+            .times(BigInt.fromI32(10000))
+            .div(currentCandleStick.open);
+    } else {
+        stats.open = BigInt.fromI32(0);
+        stats.close = BigInt.fromI32(0);
+        stats.change = BigInt.fromI32(0);
+        stats.percentageChange = BigInt.fromI32(0);
+    }
+
+    stats.save();
 }
 
 export const initOrUpdateTransactionCandleStick = (

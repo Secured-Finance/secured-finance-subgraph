@@ -5,7 +5,7 @@ schema:
 dataSources:
   - kind: ethereum
     name: LendingMarketOperationLogic
-    network: ~
+    network: mainnet
     source:
       abi: LendingMarketController
     mapping:
@@ -27,7 +27,7 @@ dataSources:
       file: ./src/mappings/lending-controller.ts
   - kind: ethereum
     name: TokenVault
-    network: ~
+    network: mainnet
     source:
       abi: TokenVault
     mapping:
@@ -48,7 +48,7 @@ dataSources:
       file: ./src/mappings/token-vault.ts
   - kind: ethereum
     name: FundManagementLogic
-    network: ~
+    network: mainnet
     source:
       abi: LendingMarketController
     mapping:
@@ -67,7 +67,7 @@ dataSources:
       file: ./src/mappings/fund-management.ts
   - kind: ethereum
     name: LiquidationLogic
-    network: ~
+    network: mainnet
     source:
       abi: LendingMarketController
     mapping:
@@ -86,7 +86,7 @@ dataSources:
 templates:
   - kind: ethereum
     name: OrderActionLogic
-    network: ~
+    network: mainnet
     source:
       abi: OrderActionLogic
     mapping:
@@ -114,7 +114,7 @@ templates:
       file: ./src/mappings/lending-market.ts
   - kind: ethereum
     name: OrderBookLogic
-    network: ~
+    network: mainnet
     source:
       abi: OrderBookLogic
     mapping:

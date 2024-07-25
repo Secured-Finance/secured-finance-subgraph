@@ -157,18 +157,19 @@ type TransactionCandleStick @entity {
   lendingMarket: LendingMarket!
 }
 
-type TransactionStatsContainer @entity {
+type DailyTransactionStatsContainer @entity {
   id: ID!
-  stats: [TransactionStats!]! @derivedFrom(field: "container")
+  stats: [DailyTransactionStats!]! @derivedFrom(field: "container")
 }
 
-# TODO: add for APR
-# TOOD: add for vol
-type TransactionStats @entity {
+type DailyTransactionStats @entity {
   id: ID!
   currency: Bytes!
   maturity: BigInt!
-  priceChange: BigInt
-  percentageChange: BigDecimal
-  container: TransactionStatsContainer!
+  timestamp: BigInt!
+  close: BigInt!
+  open: BigInt!
+  container: DailyTransactionStatsContainer!
+  change: BigInt!
+  percentageChange: BigInt!
 }

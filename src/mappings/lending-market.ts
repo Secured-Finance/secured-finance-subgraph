@@ -11,10 +11,10 @@ import { ItayoseExecuted } from '../../generated/templates/OrderBookLogic/OrderB
 import {
     getOrInitDailyVolume,
     getOrInitLendingMarket,
+    initOrUpdateDailyTransactionStats,
     initOrUpdateTransactionCandleStick,
     initOrder,
     initTransaction,
-    updateTransactionStats,
 } from '../helper/initializer';
 import { getOrderEntityId } from '../utils/id-generation';
 
@@ -113,6 +113,12 @@ export function handleOrderExecuted(event: OrderExecuted): void {
                 BigInt.fromI32(intervals[i])
             );
         }
+
+        initOrUpdateDailyTransactionStats(
+            event.params.ccy,
+            event.params.maturity,
+            event.block.timestamp
+        );
     }
 }
 
@@ -214,8 +220,8 @@ export function handlePositionUnwound(event: PositionUnwound): void {
                 BigInt.fromI32(intervals[i])
             );
         }
-        // TODO: check if this needs to be added in other handlers
-        updateTransactionStats(
+
+        initOrUpdateDailyTransactionStats(
             event.params.ccy,
             event.params.maturity,
             event.block.timestamp
@@ -328,6 +334,11 @@ export function handleItayoseExecuted(event: ItayoseExecuted): void {
             BigInt.fromI32(intervals[i])
         );
     }
+    initOrUpdateDailyTransactionStats(
+        event.params.ccy,
+        event.params.maturity,
+        event.block.timestamp
+    );
 }
 
 function addToTransactionVolume(
