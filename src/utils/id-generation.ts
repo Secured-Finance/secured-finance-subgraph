@@ -24,3 +24,10 @@ export function getTransactionCandleStickEntityId(
 ): string {
     return `${ccy.toString()}-${maturity.toString()}-${interval.toString()}-${epochTime.toString()}`;
 }
+
+export function getDailyTransactionEntityId(
+    ccy: Bytes,
+    maturity: BigInt
+): string {
+    return `${ccy.toHexString()}-${maturity.toString()}`;
+}

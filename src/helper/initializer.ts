@@ -20,6 +20,7 @@ import {
     User,
 } from '../../generated/schema';
 import {
+    getDailyTransactionEntityId,
     getDailyVolumeEntityId,
     getTransactionCandleStickEntityId,
 } from '../utils/id-generation';
@@ -300,7 +301,7 @@ export function initOrUpdateDailyTransactionStats(
         container.save();
     }
 
-    const statsId = currency.toHexString() + '-' + maturity.toString();
+    const statsId = getDailyTransactionEntityId(currency, maturity);
     let stats = DailyTransactionStats.load(statsId);
 
     if (!stats) {

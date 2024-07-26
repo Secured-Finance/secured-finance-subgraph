@@ -17,6 +17,7 @@ import {
     handlePreOrderExecuted,
 } from '../src/mappings/lending-market';
 import {
+    getDailyTransactionEntityId,
     getDailyVolumeEntityId,
     getOrderEntityId,
     getTransactionCandleStickEntityId,
@@ -1911,6 +1912,7 @@ describe('Transaction Candle Stick', () => {
                 'interval',
                 interval.toString()
             );
+
             assert.fieldEquals(
                 'TransactionCandleStick',
                 id,
@@ -2477,5 +2479,196 @@ describe('Transaction Candle Stick', () => {
                 filledUnitPrice.toString()
             );
         }
+    });
+});
+
+describe('Daily Transaction Stats', () => {
+    beforeEach(() => {
+        clearStore();
+        createLendingMarket(ccy, maturity);
+    });
+
+    test('order executed creates and updates daily stats correctly', () => {
+        const placedOrderId = BigInt.fromI32(0);
+        const filledAmount = BigInt.fromI32(81);
+        const filledUnitPrice = unitPrice;
+        const filledAmountInFV = BigInt.fromI32(90);
+        const totalAmount = filledAmount.plus(amount);
+        const feeInFV = BigInt.fromI32(1);
+
+        const event = createOrderExecutedEvent(
+            ALICE,
+            borrow,
+            ccy,
+            maturity,
+            totalAmount,
+            BigInt.fromI32(0),
+            filledAmount,
+            filledUnitPrice,
+            filledAmountInFV,
+            feeInFV,
+            placedOrderId,
+            BigInt.fromI32(0),
+            BigInt.fromI32(0),
+            true
+        );
+        handleOrderExecuted(event);
+
+        const id = getDailyTransactionEntityId(ccy, maturity);
+
+        assert.fieldEquals(
+            'DailyTransactionStats',
+            id,
+            'currency',
+            ccy.toHexString()
+        );
+        assert.fieldEquals(
+            'DailyTransactionStats',
+            id,
+            'maturity',
+            maturity.toString()
+        );
+        assert.fieldEquals(
+            'DailyTransactionStats',
+            id,
+            'open',
+            filledUnitPrice.toString()
+        );
+        assert.fieldEquals(
+            'DailyTransactionStats',
+            id,
+            'close',
+            filledUnitPrice.toString()
+        );
+        assert.fieldEquals(
+            'DailyTransactionStats',
+            id,
+            'change',
+            BigInt.fromI32(0).toString()
+        );
+        assert.fieldEquals(
+            'DailyTransactionStats',
+            id,
+            'percentageChange',
+            BigInt.fromI32(0).toString()
+        );
+    });
+
+    test('position unwound should update the daily stats', () => {
+        const futureValue = BigInt.fromI32(250);
+        const filledAmount = BigInt.fromI32(225);
+        const filledUnitPrice = unitPrice;
+        const filledAmountInFV = BigInt.fromI32(250);
+
+        const event = createPositionUnwoundEvent(
+            BOB,
+            lend,
+            ccy,
+            maturity,
+            futureValue,
+            filledAmount,
+            filledUnitPrice,
+            filledAmountInFV,
+            BigInt.fromI32(0),
+            false,
+            timestamp
+        );
+        handlePositionUnwound(event);
+
+        const id = getDailyTransactionEntityId(ccy, maturity);
+
+        assert.fieldEquals(
+            'DailyTransactionStats',
+            id,
+            'currency',
+            ccy.toHexString()
+        );
+        assert.fieldEquals(
+            'DailyTransactionStats',
+            id,
+            'maturity',
+            maturity.toString()
+        );
+        assert.fieldEquals(
+            'DailyTransactionStats',
+            id,
+            'open',
+            filledUnitPrice.toString()
+        );
+        assert.fieldEquals(
+            'DailyTransactionStats',
+            id,
+            'close',
+            filledUnitPrice.toString()
+        );
+        assert.fieldEquals(
+            'DailyTransactionStats',
+            id,
+            'change',
+            BigInt.fromI32(0).toString()
+        );
+        assert.fieldEquals(
+            'DailyTransactionStats',
+            id,
+            'percentageChange',
+            BigInt.fromI32(0).toString()
+        );
+    });
+
+    test('itayose executed event should update the daily stats', () => {
+        const openingUnitPrice = BigInt.fromI32(8050);
+        const lastLendUnitPrice = BigInt.fromI32(8100);
+        const lastBorrowUnitPrice = BigInt.fromI32(8000);
+        const offsetAmount = BigInt.fromI32(300);
+        const offsetAmountInFV = BigInt.fromI32(372);
+        const itayoseExecutedEvent = createItayoseExecutedEvent(
+            ccy,
+            maturity,
+            openingUnitPrice,
+            lastLendUnitPrice,
+            lastBorrowUnitPrice,
+            offsetAmount,
+            timestamp
+        );
+        handleItayoseExecuted(itayoseExecutedEvent);
+
+        const id = getDailyTransactionEntityId(ccy, maturity);
+
+        assert.fieldEquals(
+            'DailyTransactionStats',
+            id,
+            'currency',
+            ccy.toHexString()
+        );
+        assert.fieldEquals(
+            'DailyTransactionStats',
+            id,
+            'maturity',
+            maturity.toString()
+        );
+        assert.fieldEquals(
+            'DailyTransactionStats',
+            id,
+            'open',
+            openingUnitPrice.toString()
+        );
+        assert.fieldEquals(
+            'DailyTransactionStats',
+            id,
+            'close',
+            openingUnitPrice.toString()
+        );
+        assert.fieldEquals(
+            'DailyTransactionStats',
+            id,
+            'change',
+            BigInt.fromI32(0).toString()
+        );
+        assert.fieldEquals(
+            'DailyTransactionStats',
+            id,
+            'percentageChange',
+            BigInt.fromI32(0).toString()
+        );
     });
 });
