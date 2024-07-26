@@ -316,9 +316,11 @@ export function initOrUpdateDailyTransactionStats(
         stats.open = currentCandleStick.open;
         stats.close = currentCandleStick.close;
         stats.change = currentCandleStick.close.minus(currentCandleStick.open);
-        stats.percentageChange = stats.change
-            .times(BigInt.fromI32(10000))
-            .div(currentCandleStick.open);
+        stats.percentageChange = currentCandleStick.open.isZero()
+            ? BigInt.fromI32(0)
+            : stats.change
+                  .times(BigInt.fromI32(10000))
+                  .div(currentCandleStick.open);
     } else {
         stats.open = BigInt.fromI32(0);
         stats.close = BigInt.fromI32(0);
