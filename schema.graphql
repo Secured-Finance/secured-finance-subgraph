@@ -156,3 +156,15 @@ type TransactionCandleStick @entity {
   volumeInFV: BigInt!
   lendingMarket: LendingMarket!
 }
+
+type EpnsNotificationCounter @entity {
+  id: ID!
+  totalCount: BigInt!
+}
+
+type EpnsPushNotification @entity {
+  id: ID!
+  notificationNumber: BigInt!
+  recipient: String!
+  notification: String!
+}

@@ -1,4 +1,5 @@
 import { Deposit, Withdraw } from '../../generated/TokenVault/TokenVault';
+import { sendPushNotification } from '../helper/PushNotification';
 import { initTransfer } from '../helper/initializer';
 
 export function handleDeposit(event: Deposit): void {
@@ -14,6 +15,17 @@ export function handleDeposit(event: Deposit): void {
         event.block.number,
         event.transaction.hash
     );
+
+    let type = '3';
+    let title = 'Deposit';
+    let body = `Deposited`;
+    let subject = 'PUSH Received';
+    let message = `Received`;
+    let cta = 'https://push.org/';
+
+    let notification = `{\"type\": \"${type}\", \"title\": \"${title}\", \"body\": \"${body}\", \"subject\": \"${subject}\", \"message\": \"${message}\", \"cta\": \"${cta}\"}`;
+
+    sendPushNotification(event.params.user.toHexString(), notification);
 }
 
 export function handleWithdraw(event: Withdraw): void {
@@ -29,4 +41,15 @@ export function handleWithdraw(event: Withdraw): void {
         event.block.number,
         event.transaction.hash
     );
+
+    let type = '3';
+    let title = 'Withdraw';
+    let body = 'Withdraw';
+    let subject = 'PUSH Withdraw';
+    let message = 'Received';
+    let cta = 'https://push.org/';
+
+    let notification = `{\"type\": \"${type}\", \"title\": \"${title}\", \"body\": \"${body}\", \"subject\": \"${subject}\", \"message\": \"${message}\", \"cta\": \"${cta}\"}`;
+
+    sendPushNotification(event.params.user.toHexString(), notification);
 }
