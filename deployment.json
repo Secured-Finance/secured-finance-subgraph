@@ -9,10 +9,10 @@
     "isMinorUpdate": false,
     "version": "0.1.1"
   },
-  "development-ava": {
+  "development-fil": {
     "isMajorUpdate": false,
     "isMinorUpdate": false,
-    "version": "0.1.1"
+    "version": "0.0.0"
   },
   "staging": {
     "isMajorUpdate": false,
@@ -24,10 +24,10 @@
     "isMinorUpdate": false,
     "version": "0.1.1"
   },
-  "staging-ava": {
+  "staging-fil": {
     "isMajorUpdate": false,
     "isMinorUpdate": false,
-    "version": "0.1.1"
+    "version": "0.0.0"
   },
   "sepolia": {
     "isMajorUpdate": false,
@@ -49,14 +49,9 @@
     "isMinorUpdate": false,
     "version": "0.1.0"
   },
-  "avalanche-mainnet": {
+  "filecoin-mainnet": {
     "isMajorUpdate": false,
     "isMinorUpdate": false,
-    "version": "0.1.0"
-  },
-  "polygon-zkevm-mainnet": {
-    "isMajorUpdate": false,
-    "isMinorUpdate": false,
-    "version": "0.1.0"
+    "version": "0.0.0"
   }
 }

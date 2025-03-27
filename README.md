@@ -37,7 +37,19 @@ This subgraph tracks of the current state of Secured Finance Protocol smart cont
 Follow the steps bellow to deploy the subgraph
 
 1. Run `npm run generate <ENV>` to create a migration file for the subgraph
+2. Run `npm run build ./subgraph.<ENV>.yaml` to create build files
 2. Run `npm run deploy:<ENV>` to deploy the subgraph
+
+For Filecoin, the deploy command would be:
+
+```sh
+# development-fil
+$ npm run deploy:goldsky sf-development-fil/0.0.1
+# staging-fil
+$ npm run deploy:goldsky sf-staging-fil/0.0.1
+# filecoin-mainnet
+$ npm run deploy:goldsky sf-filecoin-mainnet/0.0.1
+```
 
 ## Active Deployments
 
@@ -45,8 +57,6 @@ Follow the steps bellow to deploy the subgraph
 
 * [ETH Mainnet](https://api.studio.thegraph.com/query/64582/sf-prd-mainnet/version/latest)
 * [Arbitrum One](https://api.studio.thegraph.com/query/64582/sf-prd-arbitrum-one/version/latest)
-* [Avalanche Mainnet](https://api.studio.thegraph.com/query/64582/sf-prd-avalanche-mainnet/version/latest)
-* [Polygon zkEVM Mainnet](https://api.studio.thegraph.com/query/64582/sf-prd-polygon-zkevm-mainnet/version/latest)
 
 #### Testnet
 
