@@ -92,27 +92,23 @@ jobs:
           NPM_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build
-        run: npm run build
+        run: npm run build ./subgraph.${{needs.identify-env.outputs.environment}}.yaml
       - name: Update subgraphrc
         run: npm run update-subgraphrc ${{needs.identify-env.outputs.environment}}
       - name: Generate YAML
         run: |
           npm run generate ${{needs.identify-env.outputs.environment}}
           cat ./subgraph.${{needs.identify-env.outputs.environment}}.yaml
-      - name: Deploy Subgraph (The Graph)
+      - name: Deploy Subgraph
         id: deploy
-        if: ${{ needs.identify-env.outputs.environment != 'development-fil' && needs.identify-env.outputs.environment != 'staging-fil' && needs.identify-env.outputs.environment != 'filecoin-mainnet' }}
         run: |
           version=$(cat deployment.json | jq -r '."${{needs.identify-env.outputs.environment}}".version' | tr -d '"')
-          npm run auth ${{secrets.GRAPH_ACCESS_TOKEN}}
-          npm run deploy:${{needs.identify-env.outputs.environment}} ${version}
-      - name: Deploy Subgraph (Goldsky)
-        id: deploy_goldsky
-        if: ${{ needs.identify-env.outputs.environment == 'development-fil' || needs.identify-env.outputs.environment == 'staging-fil' || needs.identify-env.outputs.environment == 'filecoin-mainnet' }}
-        run: |
-          version=$(cat deployment.json | jq -r '."${{needs.identify-env.outputs.environment}}".version' | tr -d '"')
-          npm run build ./subgraph.${{needs.identify-env.outputs.environment}}.yaml
-          npm run deploy:goldsky -- sf-${{needs.identify-env.outputs.environment}}/${version} --token ${{secrets.GOLDSKY_ACCESS_TOKEN}}
+          if [ "${{needs.identify-env.outputs.environment}}" = "development-fil" ] || [ "${{needs.identify-env.outputs.environment}}" = "staging-fil" ] || [ "${{needs.identify-env.outputs.environment}}" = "filecoin-mainnet" ]; then
+            npm run deploy:goldsky -- sf-${{needs.identify-env.outputs.environment}}/${version} --token ${{secrets.GOLDSKY_ACCESS_TOKEN}}
+          else
+            npm run auth ${{secrets.GRAPH_ACCESS_TOKEN}}
+            npm run deploy:${{needs.identify-env.outputs.environment}} ${version}
+          fi
       - name: Commit and push
         shell: bash
         run: |
