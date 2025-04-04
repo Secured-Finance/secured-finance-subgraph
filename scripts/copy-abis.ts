@@ -1,5 +1,5 @@
 import { copyFileSync, existsSync, mkdirSync, rmSync } from 'fs';
-import glob from 'glob';
+import { glob } from 'glob';
 
 class Main {
     run() {

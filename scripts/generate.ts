@@ -4,18 +4,14 @@ import { dump, load } from 'js-yaml';
 const arrowedNetworks = [
     'development',
     'development-arb',
-    'development-ava',
     'development-fil',
     'staging',
     'staging-arb',
-    'staging-ava',
     'staging-fil',
     'sepolia',
     'mainnet',
     'arbitrum-sepolia',
     'arbitrum-one',
-    'avalanche-mainnet',
-    'polygon-zkevm-mainnet',
     'filecoin-mainnet',
 ] as const;
 type Network = (typeof arrowedNetworks)[number];
@@ -23,14 +19,11 @@ type Network = (typeof arrowedNetworks)[number];
 const networkMap: Partial<Record<Network, string>> = {
     development: 'sepolia',
     'development-arb': 'arbitrum-sepolia',
-    'development-ava': 'fuji',
     'development-fil': 'filecoin-testnet',
     staging: 'sepolia',
     'staging-arb': 'arbitrum-sepolia',
-    'staging-ava': 'fuji',
     'staging-fil': 'filecoin-testnet',
-    'avalanche-mainnet': 'avalanche',
-    'polygon-zkevm-mainnet': 'polygon-zkevm',
+    'filecoin-mainnet': 'filecoin',
 };
 
 class Main {
@@ -63,7 +56,12 @@ class Main {
             );
 
             const proxyAddress = deployment.address;
+            const blockNumber = deployment.receipt.blockNumber;
             dataSource.source.address = proxyAddress;
+            dataSource.source.startBlock =
+                typeof blockNumber === 'string' && blockNumber.startsWith('0x')
+                    ? parseInt(blockNumber, 16)
+                    : blockNumber;
             dataSource.network = network;
         }
 
