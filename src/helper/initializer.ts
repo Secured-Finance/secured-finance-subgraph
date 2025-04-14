@@ -12,10 +12,12 @@ import {
     Liquidation,
     Order,
     Protocol,
+    Total,
     Transaction,
     TransactionCandleStick,
     Transfer,
     User,
+    UserTotalVolumeByCurrency,
 } from '../../generated/schema';
 import {
     getDailyVolumeEntityId,
@@ -33,6 +35,18 @@ export const getProtocol = (): Protocol => {
         protocol.save();
     }
     return protocol as Protocol;
+};
+
+export const updateOrInitTotals = (amount: BigInt, currency: Bytes): Total => {
+    let totals = Total.load(currency.toHexString());
+    if (!totals) {
+        totals = new Total(currency.toHexString());
+        totals.totalVolume = BigInt.fromI32(0);
+    } else {
+        totals.totalVolume = totals.totalVolume.plus(amount);
+    }
+    totals.save();
+    return totals as Total;
 };
 
 const getISO8601Date = (date: BigInt): string => {
@@ -86,6 +100,32 @@ export const getOrInitUser = (address: Bytes, createdAt: BigInt): User => {
         protocol.save();
     }
     return user as User;
+};
+
+export const initOrUpdateUserTotalVolumeByCurrency = (
+    currency: Bytes,
+    userAddress: Address,
+    volume: BigInt,
+    timestamp: BigInt
+): UserTotalVolumeByCurrency => {
+    let userTotal = UserTotalVolumeByCurrency.load(
+        `${userAddress.toHexString()}-${currency.toHexString()}`
+    );
+
+    if (!userTotal) {
+        const user = getOrInitUser(userAddress, timestamp);
+        userTotal = new UserTotalVolumeByCurrency(
+            `${userAddress.toHexString()}-${currency.toHexString()}`
+        );
+        userTotal.currency = currency;
+        userTotal.user = user.id;
+        userTotal.volume = volume;
+    }else {
+        userTotal.volume = userTotal.volume.plus(volume);
+    }
+    userTotal.save();
+
+    return userTotal as UserTotalVolumeByCurrency;
 };
 
 export const getOrInitDailyVolume = (
