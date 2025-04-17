@@ -12,7 +12,6 @@ import {
     getOrInitDailyVolume,
     getOrInitLendingMarket,
     updateOrInitTotals,
-    initOrUpdateUserTotalVolumeByCurrency,
     getProtocol,
     initOrUpdateTransactionCandleStick,
     initOrder,
@@ -104,13 +103,6 @@ export function handleOrderExecuted(event: OrderExecuted): void {
         );
         addToTransactionVolume(event.params.filledAmount, dailyVolume);
         updateOrInitTotals(event.params.filledAmount, event.params.ccy);
-        // update user's total volume by currency, create UserTotalVolume if not exist
-        initOrUpdateUserTotalVolumeByCurrency(
-            event.params.ccy,
-            event.params.user,
-            event.params.filledAmount,
-            event.block.timestamp
-        );
 
         for (let i = 0; i < intervals.length; i++) {
             initOrUpdateTransactionCandleStick(
@@ -219,12 +211,6 @@ export function handlePositionUnwound(event: PositionUnwound): void {
 
         addToTransactionVolume(event.params.filledAmount, dailyVolume);
         updateOrInitTotals(event.params.filledAmount, event.params.ccy);
-        initOrUpdateUserTotalVolumeByCurrency(
-            event.params.ccy,
-            event.params.user,
-            event.params.filledAmount,
-            event.block.timestamp
-        );
         for (let i = 0; i < intervals.length; i++) {
             initOrUpdateTransactionCandleStick(
                 event.params.ccy,
@@ -329,12 +315,7 @@ export function handleItayoseExecuted(event: ItayoseExecuted): void {
     );
     addToTransactionVolume(event.params.offsetAmount, dailyVolume);
     updateOrInitTotals(lendingMarket.offsetAmount, dailyVolume.currency);
-    // No update for user's total volume by currency for itayose
-    // initOrUpdateUserTotalVolumeByCurrency(
-    //     event.params.ccy,
-    //     event.params.user,
-    //     event.params.offsetAmount
-    // );
+
     const offsetAmountInFV = calculateForwardValue(
         event.params.offsetAmount,
         event.params.openingUnitPrice

@@ -17,7 +17,6 @@ import {
     TransactionCandleStick,
     Transfer,
     User,
-    UserTotalVolumeByCurrency,
 } from '../../generated/schema';
 import {
     getDailyVolumeEntityId,
@@ -100,32 +99,6 @@ export const getOrInitUser = (address: Bytes, createdAt: BigInt): User => {
         protocol.save();
     }
     return user as User;
-};
-
-export const initOrUpdateUserTotalVolumeByCurrency = (
-    currency: Bytes,
-    userAddress: Address,
-    volume: BigInt,
-    timestamp: BigInt
-): UserTotalVolumeByCurrency => {
-    let userTotal = UserTotalVolumeByCurrency.load(
-        `${userAddress.toHexString()}-${currency.toHexString()}`
-    );
-
-    if (!userTotal) {
-        const user = getOrInitUser(userAddress, timestamp);
-        userTotal = new UserTotalVolumeByCurrency(
-            `${userAddress.toHexString()}-${currency.toHexString()}`
-        );
-        userTotal.currency = currency;
-        userTotal.user = user.id;
-        userTotal.volume = volume;
-    } else {
-        userTotal.volume = userTotal.volume.plus(volume);
-    }
-    userTotal.save();
-
-    return userTotal as UserTotalVolumeByCurrency;
 };
 
 export const getOrInitDailyVolume = (

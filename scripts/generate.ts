@@ -57,11 +57,6 @@ class Main {
 
             const proxyAddress = deployment.address;
             dataSource.source.address = proxyAddress;
-            // const blockNumber = deployment.receipt.blockNumber;
-            // dataSource.source.startBlock =
-            //     typeof blockNumber === 'string' && blockNumber.startsWith('0x')
-            //         ? parseInt(blockNumber, 16)
-            //         : blockNumber;
             dataSource.network = network;
         }
 

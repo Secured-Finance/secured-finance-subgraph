@@ -87,7 +87,6 @@ type User @entity {
   transferCount: BigInt!
   transfers: [Transfer!]! @derivedFrom(field: "user")
   deposits: [Deposit!]! @derivedFrom(field: "user")
-  userVolumes: [UserTotalVolumeByCurrency!]! @derivedFrom(field: "user")
 }
 
 type DailyVolume @entity {
@@ -161,11 +160,4 @@ type TransactionCandleStick @entity {
 type Total @entity {
   id: ID! # currency
   totalVolume: BigInt!
-}
-
-type UserTotalVolumeByCurrency @entity {
-  id: ID! # "userAddress-currency"
-  volume: BigInt!
-  currency: Bytes!
-  user: User!
 }
