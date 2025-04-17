@@ -41,7 +41,7 @@ export const updateOrInitTotals = (amount: BigInt, currency: Bytes): Total => {
     let totals = Total.load(currency.toHexString());
     if (!totals) {
         totals = new Total(currency.toHexString());
-        totals.totalVolume = BigInt.fromI32(0);
+        totals.totalVolume = amount;
     } else {
         totals.totalVolume = totals.totalVolume.plus(amount);
     }
@@ -120,7 +120,7 @@ export const initOrUpdateUserTotalVolumeByCurrency = (
         userTotal.currency = currency;
         userTotal.user = user.id;
         userTotal.volume = volume;
-    }else {
+    } else {
         userTotal.volume = userTotal.volume.plus(volume);
     }
     userTotal.save();
