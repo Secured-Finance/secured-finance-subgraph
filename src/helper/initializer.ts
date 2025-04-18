@@ -65,7 +65,16 @@ export const updateOrInitTakerVolume = (
 
     let takerVolume = TakerVolumeByCurrency.load(id);
     if (!takerVolume) {
-        const user = getOrInitUser(userAddress, BigInt.fromI32(0));
+        let user = User.load(userAddress.toHexString());
+        if (!user) {
+            user = new User(userAddress.toHexString());
+            user.transactionCount = BigInt.fromI32(0);
+            user.orderCount = BigInt.fromI32(0);
+            user.liquidationCount = BigInt.fromI32(0);
+            user.transferCount = BigInt.fromI32(0);
+            user.createdAt = BigInt.fromI32(0);
+            user.save();
+        }
         takerVolume = new TakerVolumeByCurrency(id);
         takerVolume.user = user.id;
         takerVolume.currency = currency;
@@ -361,15 +370,12 @@ export const initOrUpdateTransactionCandleStick = (
         ).id;
     } else {
         transactionCandleStick.close = executionPrice;
-        transactionCandleStick.high = BigInt.fromI32(
-            Math.max(
-                transactionCandleStick.high.toI32(),
-                executionPrice.toI32()
-            )
-        );
-        transactionCandleStick.low = BigInt.fromI32(
-            Math.min(transactionCandleStick.low.toI32(), executionPrice.toI32())
-        );
+        if (transactionCandleStick.high.toI32() < executionPrice.toI32()) {
+            transactionCandleStick.high = executionPrice;
+        }
+        if (transactionCandleStick.low.toI32() > executionPrice.toI32()) {
+            transactionCandleStick.low = executionPrice;
+        }
         transactionCandleStick.average = transactionCandleStick.average
             .times(transactionCandleStick.volume.toBigDecimal())
             .plus(executionPrice.times(amount).toBigDecimal())
