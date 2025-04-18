@@ -12,6 +12,8 @@ import {
     Liquidation,
     Order,
     Protocol,
+    ProtocolVolumeByCurrency,
+    TakerVolumeByCurrency,
     Transaction,
     TransactionCandleStick,
     Transfer,
@@ -33,6 +35,55 @@ export const getProtocol = (): Protocol => {
         protocol.save();
     }
     return protocol as Protocol;
+};
+
+export const updateOrInitProtocolVolume = (
+    amount: BigInt,
+    currency: Bytes
+): ProtocolVolumeByCurrency => {
+    const protocol = getProtocol();
+    let protocolVolume = ProtocolVolumeByCurrency.load(currency.toHexString());
+    if (!protocolVolume) {
+        protocolVolume = new ProtocolVolumeByCurrency(currency.toHexString());
+        protocolVolume.protocol = protocol.id;
+        protocolVolume.currency = currency;
+        protocolVolume.totalVolume = amount;
+    } else {
+        protocolVolume.totalVolume = protocolVolume.totalVolume.plus(amount);
+    }
+    protocolVolume.save();
+    return protocolVolume as ProtocolVolumeByCurrency;
+};
+
+export const updateOrInitTakerVolume = (
+    amount: BigInt,
+    currency: Bytes,
+    userAddress: Address
+): TakerVolumeByCurrency => {
+    const userId = userAddress.toHexString();
+    const id = userId + '-' + currency.toHexString();
+
+    let takerVolume = TakerVolumeByCurrency.load(id);
+    if (!takerVolume) {
+        let user = User.load(userAddress.toHexString());
+        if (!user) {
+            user = new User(userAddress.toHexString());
+            user.transactionCount = BigInt.fromI32(0);
+            user.orderCount = BigInt.fromI32(0);
+            user.liquidationCount = BigInt.fromI32(0);
+            user.transferCount = BigInt.fromI32(0);
+            user.createdAt = BigInt.fromI32(0);
+            user.save();
+        }
+        takerVolume = new TakerVolumeByCurrency(id);
+        takerVolume.user = user.id;
+        takerVolume.currency = currency;
+        takerVolume.totalVolume = amount;
+    } else {
+        takerVolume.totalVolume = takerVolume.totalVolume.plus(amount);
+    }
+    takerVolume.save();
+    return takerVolume as TakerVolumeByCurrency;
 };
 
 const getISO8601Date = (date: BigInt): string => {
@@ -319,12 +370,12 @@ export const initOrUpdateTransactionCandleStick = (
         ).id;
     } else {
         transactionCandleStick.close = executionPrice;
-        transactionCandleStick.high = BigInt.fromI32(
-            max(transactionCandleStick.high.toI32(), executionPrice.toI32())
-        );
-        transactionCandleStick.low = BigInt.fromI32(
-            min(transactionCandleStick.low.toI32(), executionPrice.toI32())
-        );
+        if (transactionCandleStick.high.toI32() < executionPrice.toI32()) {
+            transactionCandleStick.high = executionPrice;
+        }
+        if (transactionCandleStick.low.toI32() > executionPrice.toI32()) {
+            transactionCandleStick.low = executionPrice;
+        }
         transactionCandleStick.average = transactionCandleStick.average
             .times(transactionCandleStick.volume.toBigDecimal())
             .plus(executionPrice.times(amount).toBigDecimal())
