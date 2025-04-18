@@ -115,10 +115,6 @@ export function handleOrderExecuted(event: OrderExecuted): void {
                 BigInt.fromI32(intervals[i])
             );
         }
-        /*
-        fetch last price from contract
-        store with timestamp, currency, maturity
-        */
     }
 }
 
