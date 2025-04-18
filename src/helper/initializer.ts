@@ -12,6 +12,8 @@ import {
     Liquidation,
     Order,
     Protocol,
+    ProtocolVolumeByCurrency,
+    TakerVolumeByCurrency,
     Transaction,
     TransactionCandleStick,
     Transfer,
@@ -25,7 +27,7 @@ import { buildLendingMarketId } from '../utils/string';
 
 const PROTOCOL_ID = '1';
 
-export const getProtocol = (): Protocol => {
+export function getProtocol(): Protocol {
     let protocol = Protocol.load(PROTOCOL_ID);
     if (!protocol) {
         protocol = new Protocol(PROTOCOL_ID);
@@ -33,7 +35,40 @@ export const getProtocol = (): Protocol => {
         protocol.save();
     }
     return protocol as Protocol;
-};
+}
+
+export function updateOrInitProtocolVolume(amount: BigInt, currency: Bytes): ProtocolVolumeByCurrency {
+    const protocol = getProtocol();
+    let protocolVolume = ProtocolVolumeByCurrency.load(currency.toHexString());
+    if (!protocolVolume) {
+        protocolVolume = new ProtocolVolumeByCurrency(currency.toHexString());
+        protocolVolume.protocol = protocol.id;
+        protocolVolume.currency = currency;
+        protocolVolume.totalVolume = amount;
+    } else {
+        protocolVolume.totalVolume = protocolVolume.totalVolume.plus(amount);
+    }
+    protocolVolume.save();
+    return protocolVolume as ProtocolVolumeByCurrency;
+}
+
+export function updateOrInitTakerVolume(amount: BigInt, currency: Bytes, userAddress: Address): TakerVolumeByCurrency {
+    const userId = userAddress.toHexString();
+    const id = userId + '-' + currency.toHexString();
+    
+    let takerVolume = TakerVolumeByCurrency.load(id);
+    if (!takerVolume) {
+        const user = getOrInitUser(userAddress, BigInt.fromI32(0));
+        takerVolume = new TakerVolumeByCurrency(id);
+        takerVolume.user = user.id;
+        takerVolume.currency = currency;
+        takerVolume.totalVolume = amount;
+    } else {
+        takerVolume.totalVolume = takerVolume.totalVolume.plus(amount);
+    }
+    takerVolume.save();
+    return takerVolume as TakerVolumeByCurrency;
+}
 
 const getISO8601Date = (date: BigInt): string => {
     const utcDate = new Date(date.times(BigInt.fromI32(1000)).toI64());
@@ -41,10 +76,10 @@ const getISO8601Date = (date: BigInt): string => {
     return dayStr;
 };
 
-export const getOrInitLendingMarket = (
+export function getOrInitLendingMarket(
     ccy: Bytes,
     maturity: BigInt
-): LendingMarket => {
+): LendingMarket {
     const id = buildLendingMarketId(ccy, maturity);
     let lendingMarket = LendingMarket.load(id);
     if (!lendingMarket) {
@@ -65,9 +100,9 @@ export const getOrInitLendingMarket = (
         ]);
     }
     return lendingMarket as LendingMarket;
-};
+}
 
-export const getOrInitUser = (address: Bytes, createdAt: BigInt): User => {
+export function getOrInitUser(address: Bytes, createdAt: BigInt): User {
     let user = User.load(address.toHexString());
     if (!user) {
         user = new User(address.toHexString());
@@ -86,13 +121,13 @@ export const getOrInitUser = (address: Bytes, createdAt: BigInt): User => {
         protocol.save();
     }
     return user as User;
-};
+}
 
-export const getOrInitDailyVolume = (
+export function getOrInitDailyVolume(
     ccy: Bytes,
     maturity: BigInt,
     date: BigInt
-): DailyVolume => {
+): DailyVolume {
     const dayStr = getISO8601Date(date);
 
     let id = getDailyVolumeEntityId(ccy, maturity, dayStr);
@@ -102,22 +137,22 @@ export const getOrInitDailyVolume = (
         dailyVolume.currency = ccy;
         dailyVolume.maturity = maturity;
         dailyVolume.day = dayStr;
-        dailyVolume.timestamp = BigInt.fromI64(
-            Date.parse(dayStr).getTime() / 1000
-        );
+        // Convert the date string to timestamp in seconds
+        // Use the original date parameter instead of parsing the date string
+        dailyVolume.timestamp = date;
         dailyVolume.volume = BigInt.fromI32(0);
         dailyVolume.lendingMarket = getOrInitLendingMarket(ccy, maturity).id;
         dailyVolume.save();
     }
     return dailyVolume as DailyVolume;
-};
+}
 
-export const initOrder = (
+export function initOrder(
     id: string,
     orderId: BigInt,
     userAddress: Address,
     currency: Bytes,
-    side: i32,
+    side: number,
     maturity: BigInt,
     inputUnitPrice: BigInt,
     inputAmount: BigInt,
@@ -129,14 +164,14 @@ export const initOrder = (
     timestamp: BigInt,
     blockNumber: BigInt,
     txHash: Bytes
-): void => {
+): void {
     const order = new Order(id);
     const user = getOrInitUser(userAddress, timestamp);
 
     order.orderId = orderId;
     order.user = user.id;
     order.currency = currency;
-    order.side = side;
+    order.side = side as i32;
     order.maturity = maturity;
     order.inputUnitPrice = inputUnitPrice;
     order.filledAmount = filledAmount;
@@ -156,16 +191,16 @@ export const initOrder = (
     user.save();
 
     log.debug('Order created with: {}', [id]);
-};
+}
 
-export const initTransaction = (
+export function initTransaction(
     txId: string,
     orderId: string,
     filledPrice: BigInt,
     userAddress: Address,
     currency: Bytes,
     maturity: BigInt,
-    side: i32,
+    side: number,
     filledAmount: BigInt,
     filledAmountInFV: BigInt,
     feeInFV: BigInt,
@@ -173,7 +208,7 @@ export const initTransaction = (
     timestamp: BigInt,
     blockNumber: BigInt,
     txHash: Bytes
-): void => {
+): void {
     if (filledAmount.isZero()) return;
 
     const order = Order.load(orderId);
@@ -186,7 +221,7 @@ export const initTransaction = (
     transaction.user = user.id;
     transaction.currency = currency;
     transaction.maturity = maturity;
-    transaction.side = side;
+    transaction.side = side as i32;
     transaction.executionType = executionType;
     transaction.futureValue = filledAmountInFV;
     transaction.amount = filledAmount;
@@ -203,9 +238,9 @@ export const initTransaction = (
 
     user.transactionCount = user.transactionCount.plus(BigInt.fromI32(1));
     user.save();
-};
+}
 
-export const initLiquidation = (
+export function initLiquidation(
     id: string,
     userAddress: Address,
     collateralCurrency: Bytes,
@@ -215,7 +250,7 @@ export const initLiquidation = (
     timestamp: BigInt,
     blockNumber: BigInt,
     txHash: Bytes
-): void => {
+): void {
     const liquidation = new Liquidation(id);
 
     const user = getOrInitUser(userAddress, timestamp);
@@ -232,9 +267,9 @@ export const initLiquidation = (
 
     user.liquidationCount = user.liquidationCount.plus(BigInt.fromI32(1));
     user.save();
-};
+}
 
-export const initTransfer = (
+export function initTransfer(
     id: string,
     userAddress: Address,
     currency: Bytes,
@@ -243,7 +278,7 @@ export const initTransfer = (
     timestamp: BigInt,
     blockNumber: BigInt,
     txHash: Bytes
-): void => {
+): void {
     const transfer = new Transfer(id);
 
     const user = getOrInitUser(userAddress, timestamp);
@@ -274,9 +309,9 @@ export const initTransfer = (
 
     user.transferCount = user.transferCount.plus(BigInt.fromI32(1));
     user.save();
-};
+}
 
-export const initOrUpdateTransactionCandleStick = (
+export function initOrUpdateTransactionCandleStick(
     currency: Bytes,
     maturity: BigInt,
     amount: BigInt,
@@ -284,7 +319,7 @@ export const initOrUpdateTransactionCandleStick = (
     executionPrice: BigInt,
     timestamp: BigInt,
     interval: BigInt
-): void => {
+): void {
     const epochTime = timestamp.div(interval);
 
     const transactionCandleStickId = getTransactionCandleStickEntityId(
@@ -320,10 +355,10 @@ export const initOrUpdateTransactionCandleStick = (
     } else {
         transactionCandleStick.close = executionPrice;
         transactionCandleStick.high = BigInt.fromI32(
-            max(transactionCandleStick.high.toI32(), executionPrice.toI32())
+            Math.max(transactionCandleStick.high.toI32(), executionPrice.toI32()) as i32
         );
         transactionCandleStick.low = BigInt.fromI32(
-            min(transactionCandleStick.low.toI32(), executionPrice.toI32())
+            Math.min(transactionCandleStick.low.toI32(), executionPrice.toI32()) as i32
         );
         transactionCandleStick.average = transactionCandleStick.average
             .times(transactionCandleStick.volume.toBigDecimal())
@@ -336,4 +371,4 @@ export const initOrUpdateTransactionCandleStick = (
     }
 
     transactionCandleStick.save();
-};
+}

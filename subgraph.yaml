@@ -97,6 +97,8 @@ templates:
         - Order
         - Transaction
         - DailyVolume
+        - TakerVolumeByCurrency
+        - ProtocolVolumeByCurrency
       abis:
         - name: OrderActionLogic
           file: ./abis/OrderActionLogic.json
@@ -123,6 +125,7 @@ templates:
       language: wasm/assemblyscript
       entities:
         - LendingMarket
+        - ProtocolVolumeByCurrency
       abis:
         - name: OrderBookLogic
           file: ./abis/OrderBookLogic.json
