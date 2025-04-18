@@ -12,6 +12,7 @@ import {
     Liquidation,
     Order,
     Protocol,
+    Total,
     Transaction,
     TransactionCandleStick,
     Transfer,
@@ -33,6 +34,18 @@ export const getProtocol = (): Protocol => {
         protocol.save();
     }
     return protocol as Protocol;
+};
+
+export const updateOrInitTotals = (amount: BigInt, currency: Bytes): Total => {
+    let totals = Total.load(currency.toHexString());
+    if (!totals) {
+        totals = new Total(currency.toHexString());
+        totals.totalVolume = amount;
+    } else {
+        totals.totalVolume = totals.totalVolume.plus(amount);
+    }
+    totals.save();
+    return totals as Total;
 };
 
 const getISO8601Date = (date: BigInt): string => {
