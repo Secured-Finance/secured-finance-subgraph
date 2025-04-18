@@ -62,7 +62,7 @@ export const updateOrInitTakerVolume = (
 ): TakerVolumeByCurrency => {
     const userId = userAddress.toHexString();
     const id = userId + '-' + currency.toHexString();
-    
+
     let takerVolume = TakerVolumeByCurrency.load(id);
     if (!takerVolume) {
         const user = getOrInitUser(userAddress, BigInt.fromI32(0));
@@ -368,10 +368,7 @@ export const initOrUpdateTransactionCandleStick = (
             )
         );
         transactionCandleStick.low = BigInt.fromI32(
-            Math.min(
-                transactionCandleStick.low.toI32(),
-                executionPrice.toI32()
-            )
+            Math.min(transactionCandleStick.low.toI32(), executionPrice.toI32())
         );
         transactionCandleStick.average = transactionCandleStick.average
             .times(transactionCandleStick.volume.toBigDecimal())
