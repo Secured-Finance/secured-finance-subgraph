@@ -37,7 +37,10 @@ export function getProtocol(): Protocol {
     return protocol as Protocol;
 }
 
-export function updateOrInitProtocolVolume(amount: BigInt, currency: Bytes): ProtocolVolumeByCurrency {
+export function updateOrInitProtocolVolume(
+    amount: BigInt,
+    currency: Bytes
+): ProtocolVolumeByCurrency {
     const protocol = getProtocol();
     let protocolVolume = ProtocolVolumeByCurrency.load(currency.toHexString());
     if (!protocolVolume) {
@@ -52,10 +55,14 @@ export function updateOrInitProtocolVolume(amount: BigInt, currency: Bytes): Pro
     return protocolVolume as ProtocolVolumeByCurrency;
 }
 
-export function updateOrInitTakerVolume(amount: BigInt, currency: Bytes, userAddress: Address): TakerVolumeByCurrency {
+export function updateOrInitTakerVolume(
+    amount: BigInt,
+    currency: Bytes,
+    userAddress: Address
+): TakerVolumeByCurrency {
     const userId = userAddress.toHexString();
     const id = userId + '-' + currency.toHexString();
-    
+
     let takerVolume = TakerVolumeByCurrency.load(id);
     if (!takerVolume) {
         const user = getOrInitUser(userAddress, BigInt.fromI32(0));
@@ -355,10 +362,16 @@ export function initOrUpdateTransactionCandleStick(
     } else {
         transactionCandleStick.close = executionPrice;
         transactionCandleStick.high = BigInt.fromI32(
-            Math.max(transactionCandleStick.high.toI32(), executionPrice.toI32()) as i32
+            Math.max(
+                transactionCandleStick.high.toI32(),
+                executionPrice.toI32()
+            ) as i32
         );
         transactionCandleStick.low = BigInt.fromI32(
-            Math.min(transactionCandleStick.low.toI32(), executionPrice.toI32()) as i32
+            Math.min(
+                transactionCandleStick.low.toI32(),
+                executionPrice.toI32()
+            ) as i32
         );
         transactionCandleStick.average = transactionCandleStick.average
             .times(transactionCandleStick.volume.toBigDecimal())
