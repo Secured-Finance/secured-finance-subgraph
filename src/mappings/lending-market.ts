@@ -1,4 +1,4 @@
-import { Address, BigInt, Bytes } from '@graphprotocol/graph-ts';
+import { Address, BigInt } from '@graphprotocol/graph-ts';
 import { DailyVolume, Order } from '../../generated/schema';
 import {
     OrderCanceled,
@@ -11,11 +11,10 @@ import { ItayoseExecuted } from '../../generated/templates/OrderBookLogic/OrderB
 import {
     getOrInitDailyVolume,
     getOrInitLendingMarket,
-    updateOrInitTotals,
-    getProtocol,
     initOrUpdateTransactionCandleStick,
     initOrder,
     initTransaction,
+    updateOrInitTotalsByCurrency,
 } from '../helper/initializer';
 import { getOrderEntityId } from '../utils/id-generation';
 
@@ -102,7 +101,7 @@ export function handleOrderExecuted(event: OrderExecuted): void {
             event.block.timestamp
         );
         addToTransactionVolume(event.params.filledAmount, dailyVolume);
-        updateOrInitTotals(event.params.filledAmount, event.params.ccy);
+        updateOrInitTotalsByCurrency(event.params.filledAmount, event.params.ccy);
 
         for (let i = 0; i < intervals.length; i++) {
             initOrUpdateTransactionCandleStick(
@@ -206,7 +205,7 @@ export function handlePositionUnwound(event: PositionUnwound): void {
         );
 
         addToTransactionVolume(event.params.filledAmount, dailyVolume);
-        updateOrInitTotals(event.params.filledAmount, event.params.ccy);
+        updateOrInitTotalsByCurrency(event.params.filledAmount, event.params.ccy);
         for (let i = 0; i < intervals.length; i++) {
             initOrUpdateTransactionCandleStick(
                 event.params.ccy,
@@ -310,7 +309,7 @@ export function handleItayoseExecuted(event: ItayoseExecuted): void {
         event.block.timestamp
     );
     addToTransactionVolume(event.params.offsetAmount, dailyVolume);
-    updateOrInitTotals(lendingMarket.offsetAmount, dailyVolume.currency);
+    updateOrInitTotalsByCurrency(lendingMarket.offsetAmount, dailyVolume.currency);
 
     const offsetAmountInFV = calculateForwardValue(
         event.params.offsetAmount,

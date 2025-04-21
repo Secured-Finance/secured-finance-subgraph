@@ -157,7 +157,7 @@ type TransactionCandleStick @entity {
   lendingMarket: LendingMarket!
 }
 
-type Total @entity {
+type TotalsByCurrency @entity {
   id: ID! # currency
   totalVolume: BigInt!
 }
