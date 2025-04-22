@@ -43,6 +43,7 @@ export const updateOrInitTotalsByCurrency = (
     let totals = TotalsByCurrency.load(currency.toHexString());
     if (!totals) {
         totals = new TotalsByCurrency(currency.toHexString());
+        totals.currency = currency;
         totals.totalVolume = amount;
     } else {
         totals.totalVolume = totals.totalVolume.plus(amount);

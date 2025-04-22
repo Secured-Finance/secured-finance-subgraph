@@ -159,5 +159,6 @@ type TransactionCandleStick @entity {
 
 type TotalsByCurrency @entity {
   id: ID! # currency
+  currency: Bytes!
   totalVolume: BigInt!
 }
