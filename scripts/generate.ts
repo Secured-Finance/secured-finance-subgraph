@@ -55,8 +55,6 @@ class Main {
                 `@secured-finance/contracts/deployments/${this.network}/${dataSource.source.abi}.json`
             );
 
-            const proxyAddress = deployment.address;
-            dataSource.source.address = proxyAddress;
             dataSource.network = network;
             const blockNumber = deployment.receipt.blockNumber;
             dataSource.source.address = proxyAddress;
