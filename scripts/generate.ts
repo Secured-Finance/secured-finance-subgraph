@@ -1,6 +1,6 @@
 import { readFileSync, writeFileSync } from 'fs';
 import { dump, load } from 'js-yaml';
-import { Empty_Deploymnet } from './update-subgraphrc';
+import { EMPTY_DEPLOYMENT } from './update-subgraphrc';
 
 const arrowedNetworks = [
     'development',
@@ -55,7 +55,7 @@ class Main {
         const jsonText = readFileSync(path, 'utf8');
         const deploymentData = JSON.parse(jsonText) as Record<
             string,
-            Empty_Deploymnet
+            EMPTY_DEPLOYMENT
         >;
 
         for (const dataSource of data.dataSources) {
