@@ -62,10 +62,11 @@ class Main {
             dataSource.network = network;
             if (this.isGoldsky) {
                 const blockNumber = deployment.receipt.blockNumber;
-            dataSource.source.startBlock =
-                typeof blockNumber === 'string' && blockNumber.startsWith('0x')
-                    ? parseInt(blockNumber, 16)
-                    : blockNumber;
+                dataSource.source.startBlock =
+                    typeof blockNumber === 'string' &&
+                    blockNumber.startsWith('0x')
+                        ? parseInt(blockNumber, 16)
+                        : blockNumber;
             }
         }
 
