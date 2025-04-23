@@ -36,7 +36,7 @@ This subgraph tracks of the current state of Secured Finance Protocol smart cont
 
 Follow the steps bellow to deploy the subgraph
 
-1. Run `npm run generate <ENV>` to create a migration file for the subgraph
+1. Run `npm run generate <ENV>` to create a migration file for the subgraph or if you want to use Glodsky for deployment then use `npm run generate <ENV> true`
 2. Run `npm run build ./subgraph.<ENV>.yaml` to create build files
 2. Run `npm run deploy:<ENV>` to deploy the subgraph
 

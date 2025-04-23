@@ -28,14 +28,16 @@ const networkMap: Partial<Record<Network, string>> = {
 
 class Main {
     private network: Network;
+    private isGoldsky: boolean;
 
-    constructor(network: string) {
+    constructor(network: string, isGoldsky?: string) {
         if (!arrowedNetworks.includes(network as Network)) {
             console.error('Invalid network:', network);
             process.exit(1);
         }
 
         this.network = network as Network;
+        this.isGoldsky = isGoldsky?.toLowerCase() === 'true' ? true : false;
     }
 
     async run() {
@@ -56,13 +58,16 @@ class Main {
             );
 
             const proxyAddress = deployment.address;
-            const blockNumber = deployment.receipt.blockNumber;
             dataSource.source.address = proxyAddress;
-            dataSource.source.startBlock =
-                typeof blockNumber === 'string' && blockNumber.startsWith('0x')
-                    ? parseInt(blockNumber, 16)
-                    : blockNumber;
             dataSource.network = network;
+            if (this.isGoldsky) {
+                const blockNumber = deployment.receipt.blockNumber;
+                dataSource.source.startBlock =
+                    typeof blockNumber === 'string' &&
+                    blockNumber.startsWith('0x')
+                        ? parseInt(blockNumber, 16)
+                        : blockNumber;
+            }
         }
 
         for (const template of data.templates) {
@@ -79,5 +84,5 @@ class Main {
     }
 }
 
-const [, , network] = process.argv;
-new Main(network).run();
+const [, , network, isGoldsky] = process.argv;
+new Main(network, isGoldsky).run();

@@ -14,6 +14,7 @@ import {
     initOrUpdateTransactionCandleStick,
     initOrder,
     initTransaction,
+    updateOrInitTotalsByCurrency,
 } from '../helper/initializer';
 import { getOrderEntityId } from '../utils/id-generation';
 
@@ -100,6 +101,10 @@ export function handleOrderExecuted(event: OrderExecuted): void {
             event.block.timestamp
         );
         addToTransactionVolume(event.params.filledAmount, dailyVolume);
+        updateOrInitTotalsByCurrency(
+            event.params.filledAmount,
+            event.params.ccy
+        );
 
         for (let i = 0; i < intervals.length; i++) {
             initOrUpdateTransactionCandleStick(
@@ -201,7 +206,12 @@ export function handlePositionUnwound(event: PositionUnwound): void {
             event.params.maturity,
             event.block.timestamp
         );
+
         addToTransactionVolume(event.params.filledAmount, dailyVolume);
+        updateOrInitTotalsByCurrency(
+            event.params.filledAmount,
+            event.params.ccy
+        );
         for (let i = 0; i < intervals.length; i++) {
             initOrUpdateTransactionCandleStick(
                 event.params.ccy,
@@ -305,6 +315,10 @@ export function handleItayoseExecuted(event: ItayoseExecuted): void {
         event.block.timestamp
     );
     addToTransactionVolume(event.params.offsetAmount, dailyVolume);
+    updateOrInitTotalsByCurrency(
+        lendingMarket.offsetAmount,
+        dailyVolume.currency
+    );
 
     const offsetAmountInFV = calculateForwardValue(
         event.params.offsetAmount,
