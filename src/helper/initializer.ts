@@ -8,11 +8,13 @@ import {
 import {
     DailyVolume,
     Deposit,
+    HourlyTransactionVolume,
     LendingMarket,
     Liquidation,
     Order,
     Protocol,
-    TotalsByCurrency,
+    ProtocolVolumeByCurrency,
+    TakerVolumeByCurrency,
     Transaction,
     TransactionCandleStick,
     Transfer,
@@ -36,20 +38,53 @@ export const getProtocol = (): Protocol => {
     return protocol as Protocol;
 };
 
-export const updateOrInitTotalsByCurrency = (
+export const updateOrInitProtocolVolume = (
     amount: BigInt,
     currency: Bytes
-): TotalsByCurrency => {
-    let totals = TotalsByCurrency.load(currency.toHexString());
-    if (!totals) {
-        totals = new TotalsByCurrency(currency.toHexString());
-        totals.currency = currency;
-        totals.totalVolume = amount;
+): ProtocolVolumeByCurrency => {
+    const protocol = getProtocol();
+    let protocolVolume = ProtocolVolumeByCurrency.load(currency.toHexString());
+    if (!protocolVolume) {
+        protocolVolume = new ProtocolVolumeByCurrency(currency.toHexString());
+        protocolVolume.protocol = protocol.id;
+        protocolVolume.currency = currency;
+        protocolVolume.totalVolume = amount;
     } else {
-        totals.totalVolume = totals.totalVolume.plus(amount);
+        protocolVolume.totalVolume = protocolVolume.totalVolume.plus(amount);
     }
-    totals.save();
-    return totals as TotalsByCurrency;
+    protocolVolume.save();
+    return protocolVolume as ProtocolVolumeByCurrency;
+};
+
+export const updateOrInitTakerVolume = (
+    amount: BigInt,
+    currency: Bytes,
+    userAddress: Address
+): TakerVolumeByCurrency => {
+    const userId = userAddress.toHexString();
+    const id = userId + '-' + currency.toHexString();
+
+    let takerVolume = TakerVolumeByCurrency.load(id);
+    if (!takerVolume) {
+        let user = User.load(userAddress.toHexString());
+        if (!user) {
+            user = new User(userAddress.toHexString());
+            user.transactionCount = BigInt.fromI32(0);
+            user.orderCount = BigInt.fromI32(0);
+            user.liquidationCount = BigInt.fromI32(0);
+            user.transferCount = BigInt.fromI32(0);
+            user.createdAt = BigInt.fromI32(0);
+            user.save();
+        }
+        takerVolume = new TakerVolumeByCurrency(id);
+        takerVolume.user = user.id;
+        takerVolume.currency = currency;
+        takerVolume.totalVolume = amount;
+    } else {
+        takerVolume.totalVolume = takerVolume.totalVolume.plus(amount);
+    }
+    takerVolume.save();
+    return takerVolume as TakerVolumeByCurrency;
 };
 
 const getISO8601Date = (date: BigInt): string => {
@@ -175,6 +210,29 @@ export const initOrder = (
     log.debug('Order created with: {}', [id]);
 };
 
+export const getOrInitHourlyTransactionVolume = (
+    user: User,
+    currency: Bytes,
+    hour: BigInt,
+    lendingMarketId: string,
+): HourlyTransactionVolume => {
+    const id = user.id + '-' + currency.toHexString() + '-' + hour.toString();
+    let hourlyVolume = HourlyTransactionVolume.load(id);
+
+    if (!hourlyVolume) {
+        hourlyVolume = new HourlyTransactionVolume(id);
+        hourlyVolume.user = user.id;
+        hourlyVolume.currency = currency;
+        hourlyVolume.hour = hour;
+        hourlyVolume.volume = BigInt.fromI32(0);
+        hourlyVolume.lendingMarket = lendingMarketId;
+        hourlyVolume.updatedAt = hour;
+        hourlyVolume.save();
+    }
+
+    return hourlyVolume as HourlyTransactionVolume;
+};
+
 export const initTransaction = (
     txId: string,
     orderId: string,
@@ -211,7 +269,8 @@ export const initTransaction = (
     transaction.averagePrice = !filledAmountInFV.isZero()
         ? filledAmount.divDecimal(new BigDecimal(filledAmountInFV))
         : BigDecimal.zero();
-    transaction.lendingMarket = getOrInitLendingMarket(currency, maturity).id;
+    const lendingMarket = getOrInitLendingMarket(currency, maturity);
+    transaction.lendingMarket = lendingMarket.id;
     transaction.createdAt = timestamp;
     transaction.blockNumber = blockNumber;
     transaction.txHash = txHash;
@@ -220,6 +279,20 @@ export const initTransaction = (
 
     user.transactionCount = user.transactionCount.plus(BigInt.fromI32(1));
     user.save();
+
+    // Calculate the start of the hour
+    const hour = timestamp.minus(timestamp.mod(BigInt.fromI32(3600)));
+
+    // Update or initialize the hourly transaction volume
+    const hourlyVolume = getOrInitHourlyTransactionVolume(
+        user,
+        currency,
+        hour,
+        lendingMarket.id
+    );
+    hourlyVolume.volume = hourlyVolume.volume.plus(filledAmount);
+    hourlyVolume.updatedAt = timestamp;
+    hourlyVolume.save();
 };
 
 export const initLiquidation = (
@@ -336,12 +409,12 @@ export const initOrUpdateTransactionCandleStick = (
         ).id;
     } else {
         transactionCandleStick.close = executionPrice;
-        transactionCandleStick.high = BigInt.fromI32(
-            max(transactionCandleStick.high.toI32(), executionPrice.toI32())
-        );
-        transactionCandleStick.low = BigInt.fromI32(
-            min(transactionCandleStick.low.toI32(), executionPrice.toI32())
-        );
+        if (transactionCandleStick.high.toI32() < executionPrice.toI32()) {
+            transactionCandleStick.high = executionPrice;
+        }
+        if (transactionCandleStick.low.toI32() > executionPrice.toI32()) {
+            transactionCandleStick.low = executionPrice;
+        }
         transactionCandleStick.average = transactionCandleStick.average
             .times(transactionCandleStick.volume.toBigDecimal())
             .plus(executionPrice.times(amount).toBigDecimal())

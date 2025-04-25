@@ -14,7 +14,8 @@ import {
     initOrUpdateTransactionCandleStick,
     initOrder,
     initTransaction,
-    updateOrInitTotalsByCurrency,
+    updateOrInitProtocolVolume,
+    updateOrInitTakerVolume,
 } from '../helper/initializer';
 import { getOrderEntityId } from '../utils/id-generation';
 
@@ -101,9 +102,13 @@ export function handleOrderExecuted(event: OrderExecuted): void {
             event.block.timestamp
         );
         addToTransactionVolume(event.params.filledAmount, dailyVolume);
-        updateOrInitTotalsByCurrency(
+
+        // Update protocol and taker trading volumes
+        updateOrInitProtocolVolume(event.params.filledAmount, event.params.ccy);
+        updateOrInitTakerVolume(
             event.params.filledAmount,
-            event.params.ccy
+            event.params.ccy,
+            event.params.user
         );
 
         for (let i = 0; i < intervals.length; i++) {
@@ -208,10 +213,15 @@ export function handlePositionUnwound(event: PositionUnwound): void {
         );
 
         addToTransactionVolume(event.params.filledAmount, dailyVolume);
-        updateOrInitTotalsByCurrency(
+
+        // Update protocol and taker trading volumes
+        updateOrInitProtocolVolume(event.params.filledAmount, event.params.ccy);
+        updateOrInitTakerVolume(
             event.params.filledAmount,
-            event.params.ccy
+            event.params.ccy,
+            event.params.user
         );
+
         for (let i = 0; i < intervals.length; i++) {
             initOrUpdateTransactionCandleStick(
                 event.params.ccy,
@@ -315,10 +325,9 @@ export function handleItayoseExecuted(event: ItayoseExecuted): void {
         event.block.timestamp
     );
     addToTransactionVolume(event.params.offsetAmount, dailyVolume);
-    updateOrInitTotalsByCurrency(
-        lendingMarket.offsetAmount,
-        dailyVolume.currency
-    );
+
+    // Update protocol trading volume (no user volume for itayose)
+    updateOrInitProtocolVolume(event.params.offsetAmount, event.params.ccy);
 
     const offsetAmountInFV = calculateForwardValue(
         event.params.offsetAmount,
