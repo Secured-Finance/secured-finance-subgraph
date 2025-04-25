@@ -25,6 +25,7 @@ import {
     getTransactionCandleStickEntityId,
 } from '../utils/id-generation';
 import { buildLendingMarketId } from '../utils/string';
+import { intervals } from '../mappings/lending-market';
 
 const PROTOCOL_ID = '1';
 
@@ -213,23 +214,32 @@ export const initOrder = (
 export const getOrInitHourlyTransactionVolume = (
     user: User,
     currency: Bytes,
-    hour: BigInt,
-    lendingMarketId: string
+    interval: BigInt,
+    lendingMarketId: string,
+    createdAt: BigInt
 ): HourlyTransactionVolume => {
-    const id = user.id + '-' + currency.toHexString() + '-' + hour.toString();
+    const id =
+        user.id +
+        '-' +
+        currency.toHexString() +
+        '-' +
+        interval.toString() +
+        '-' +
+        createdAt.toString() +
+        '-' +
+        lendingMarketId;
     let hourlyVolume = HourlyTransactionVolume.load(id);
-
     if (!hourlyVolume) {
         hourlyVolume = new HourlyTransactionVolume(id);
         hourlyVolume.user = user.id;
         hourlyVolume.currency = currency;
-        hourlyVolume.hour = hour;
+        hourlyVolume.interval = interval;
+        hourlyVolume.createdAt = createdAt;
         hourlyVolume.volume = BigInt.fromI32(0);
         hourlyVolume.lendingMarket = lendingMarketId;
-        hourlyVolume.updatedAt = hour;
+        hourlyVolume.updatedAt = interval;
         hourlyVolume.save();
     }
-
     return hourlyVolume as HourlyTransactionVolume;
 };
 
@@ -280,19 +290,26 @@ export const initTransaction = (
     user.transactionCount = user.transactionCount.plus(BigInt.fromI32(1));
     user.save();
 
-    // Calculate the start of the hour
-    const hour = timestamp.minus(timestamp.mod(BigInt.fromI32(3600)));
-
-    // Update or initialize the hourly transaction volume
-    const hourlyVolume = getOrInitHourlyTransactionVolume(
-        user,
-        currency,
-        hour,
-        lendingMarket.id
-    );
-    hourlyVolume.volume = hourlyVolume.volume.plus(filledAmount);
-    hourlyVolume.updatedAt = timestamp;
-    hourlyVolume.save();
+    if (executionType !== 'Maker') {
+        for (let i = 0; i < intervals.length; i++) {
+            const interval = intervals[i];
+            // Calculate the start of the hour
+            const createdAt = timestamp.minus(
+                timestamp.mod(BigInt.fromI32(interval))
+            );
+            // Update or initialize the hourly transaction volume
+            const hourlyVolume = getOrInitHourlyTransactionVolume(
+                user,
+                currency,
+                BigInt.fromI32(intervals[i]),
+                lendingMarket.id,
+                createdAt
+            );
+            hourlyVolume.volume = hourlyVolume.volume.plus(filledAmount);
+            hourlyVolume.updatedAt = timestamp;
+            hourlyVolume.save();
+        }
+    }
 };
 
 export const initLiquidation = (

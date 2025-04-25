@@ -178,8 +178,9 @@ type HourlyTransactionVolume @entity {
   id: ID! # Composite ID, e.g., "user-currency-hour"
   user: User!
   currency: Bytes!
-  hour: BigInt! # Epoch time representing the start of the hour
+  interval: BigInt!
+  createdAt: BigInt! # The start time of the interval
   volume: BigInt! # Total transaction volume for the hour
-  lendingMarket: LendingMarket!
-  updatedAt: BigInt!
+  lendingMarket: LendingMarket! # Associate it with a lending market
+  updatedAt: BigInt! # Timestamp when the record was last updated
 }
