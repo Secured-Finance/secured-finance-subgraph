@@ -237,7 +237,7 @@ export const getOrInitHourlyTransactionVolume = (
         hourlyVolume.createdAt = createdAt;
         hourlyVolume.volume = BigInt.fromI32(0);
         hourlyVolume.lendingMarket = lendingMarketId;
-        hourlyVolume.updatedAt = BigInt.fromI32(Date.now() / 1000);
+        hourlyVolume.updatedAt = BigInt.fromI64(Date.now() / 1000);
         hourlyVolume.save();
     }
     return hourlyVolume as HourlyTransactionVolume;
