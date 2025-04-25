@@ -216,7 +216,8 @@ export const getOrInitHourlyTransactionVolume = (
     currency: Bytes,
     interval: BigInt,
     lendingMarketId: string,
-    createdAt: BigInt
+    createdAt: BigInt,
+    updatedAt: BigInt
 ): HourlyTransactionVolume => {
     const id =
         user.id +
@@ -237,7 +238,7 @@ export const getOrInitHourlyTransactionVolume = (
         hourlyVolume.createdAt = createdAt;
         hourlyVolume.volume = BigInt.fromI32(0);
         hourlyVolume.lendingMarket = lendingMarketId;
-        hourlyVolume.updatedAt = BigInt.fromI64(Date.now() / 1000);
+        hourlyVolume.updatedAt = updatedAt;
         hourlyVolume.save();
     }
     return hourlyVolume as HourlyTransactionVolume;
@@ -303,7 +304,8 @@ export const initTransaction = (
                 currency,
                 BigInt.fromI32(intervals[i]),
                 lendingMarket.id,
-                createdAt
+                createdAt,
+                timestamp
             );
             hourlyVolume.volume = hourlyVolume.volume.plus(filledAmount);
             hourlyVolume.updatedAt = timestamp;
