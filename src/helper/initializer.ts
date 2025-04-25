@@ -214,7 +214,7 @@ export const getOrInitHourlyTransactionVolume = (
     user: User,
     currency: Bytes,
     hour: BigInt,
-    lendingMarketId: string,
+    lendingMarketId: string
 ): HourlyTransactionVolume => {
     const id = user.id + '-' + currency.toHexString() + '-' + hour.toString();
     let hourlyVolume = HourlyTransactionVolume.load(id);
