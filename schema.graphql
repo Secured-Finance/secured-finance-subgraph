@@ -88,7 +88,6 @@ type User @entity {
   transfers: [Transfer!]! @derivedFrom(field: "user")
   deposits: [Deposit!]! @derivedFrom(field: "user")
   takerVolumesByCurrency: [TakerVolumeByCurrency!]! @derivedFrom(field: "user")
-  takerVolumesByIntervalsByCurrency: [TakerVolumesByIntervalsByCurrency!]! @derivedFrom(field: "user")
 }
 
 type DailyVolume @entity {
@@ -119,6 +118,7 @@ type TakerVolumeByCurrency @entity {
   user: User!
   currency: Bytes!
   totalVolume: BigInt!
+  totalVolumeByInterval: [TakerVolumesByIntervalsByCurrency!]! @derivedFrom(field: "takerVolumesByCurrency")
 }
 
 type Liquidation @entity {
@@ -175,12 +175,11 @@ type TransactionCandleStick @entity {
 }
 
 type TakerVolumesByIntervalsByCurrency @entity {
-  id: ID! # Composite ID, e.g., "user-currency-interval"
-  user: User!
+  id: ID! # Composite ID, e.g., "user-currency-interval-createdAt"
+  takerVolumesByCurrency: TakerVolumeByCurrency!
   currency: Bytes!
   interval: BigInt!
   createdAt: BigInt! # The start time of the interval
   volume: BigInt! # Total transaction volume for the interval
-  lendingMarket: LendingMarket! # Associate it with a lending market
   updatedAt: BigInt! # Timestamp when the record was last updated
 }

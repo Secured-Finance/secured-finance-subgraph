@@ -39,6 +39,35 @@ export const getProtocol = (): Protocol => {
     return protocol as Protocol;
 };
 
+export const getOrInitTakerVolumesByIntervalByCurrency = (
+    takerVolumeId: string,
+    currency: Bytes,
+    interval: BigInt,
+    createdAt: BigInt,
+    updatedAt: BigInt
+): TakerVolumesByIntervalsByCurrency => {
+    const id =
+        takerVolumeId +
+        '-' +
+        currency.toHexString() +
+        '-' +
+        interval.toString() +
+        '-' +
+        createdAt.toString();
+    let volume = TakerVolumesByIntervalsByCurrency.load(id);
+    if (!volume) {
+        volume = new TakerVolumesByIntervalsByCurrency(id);
+        volume.takerVolumesByCurrency = takerVolumeId;
+        volume.currency = currency;
+        volume.interval = interval;
+        volume.createdAt = createdAt;
+        volume.volume = BigInt.fromI32(0);
+        volume.updatedAt = updatedAt;
+        volume.save();
+    }
+    return volume as TakerVolumesByIntervalsByCurrency;
+};
+
 export const updateOrInitProtocolVolume = (
     amount: BigInt,
     currency: Bytes
@@ -86,6 +115,25 @@ export const updateOrInitTakerVolume = (
         takerVolume.totalVolume = takerVolume.totalVolume.plus(amount);
     }
     takerVolume.save();
+
+    for (let i = 0; i < intervals.length; i++) {
+        const interval = intervals[i];
+        // Calculate the start of the interval
+        const createdAt = blockTimestamp.minus(
+            blockTimestamp.mod(BigInt.fromI32(interval))
+        );
+        // Update or initialize the interval transaction volume
+        const volume = getOrInitTakerVolumesByIntervalByCurrency(
+            takerVolume.id,
+            currency,
+            BigInt.fromI32(intervals[i]),
+            createdAt,
+            blockTimestamp
+        );
+        volume.volume = volume.volume.plus(amount);
+        volume.updatedAt = blockTimestamp;
+        volume.save();
+    }
     return takerVolume as TakerVolumeByCurrency;
 };
 
@@ -212,39 +260,6 @@ export const initOrder = (
     log.debug('Order created with: {}', [id]);
 };
 
-export const getOrInitTakerVolumesByIntervalByCurrency = (
-    user: User,
-    currency: Bytes,
-    interval: BigInt,
-    lendingMarketId: string,
-    createdAt: BigInt,
-    updatedAt: BigInt
-): TakerVolumesByIntervalsByCurrency => {
-    const id =
-        user.id +
-        '-' +
-        currency.toHexString() +
-        '-' +
-        interval.toString() +
-        '-' +
-        createdAt.toString() +
-        '-' +
-        lendingMarketId;
-    let volume = TakerVolumesByIntervalsByCurrency.load(id);
-    if (!volume) {
-        volume = new TakerVolumesByIntervalsByCurrency(id);
-        volume.user = user.id;
-        volume.currency = currency;
-        volume.interval = interval;
-        volume.createdAt = createdAt;
-        volume.volume = BigInt.fromI32(0);
-        volume.lendingMarket = lendingMarketId;
-        volume.updatedAt = updatedAt;
-        volume.save();
-    }
-    return volume as TakerVolumesByIntervalsByCurrency;
-};
-
 export const initTransaction = (
     txId: string,
     orderId: string,
@@ -291,28 +306,6 @@ export const initTransaction = (
 
     user.transactionCount = user.transactionCount.plus(BigInt.fromI32(1));
     user.save();
-
-    if (executionType === 'Taker') {
-        for (let i = 0; i < intervals.length; i++) {
-            const interval = intervals[i];
-            // Calculate the start of the interval
-            const createdAt = timestamp.minus(
-                timestamp.mod(BigInt.fromI32(interval))
-            );
-            // Update or initialize the interval transaction volume
-            const volume = getOrInitTakerVolumesByIntervalByCurrency(
-                user,
-                currency,
-                BigInt.fromI32(intervals[i]),
-                lendingMarket.id,
-                createdAt,
-                timestamp
-            );
-            volume.volume = volume.volume.plus(filledAmount);
-            volume.updatedAt = timestamp;
-            volume.save();
-        }
-    }
 };
 
 export const initLiquidation = (
