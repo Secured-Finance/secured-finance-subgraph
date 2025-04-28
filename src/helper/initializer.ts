@@ -14,7 +14,7 @@ import {
     Protocol,
     ProtocolVolumeByCurrency,
     TakerVolumeByCurrency,
-    TakerVolumesByIntervalsByCurrency,
+    TakerVolumeByIntervalAndCurrency,
     Transaction,
     TransactionCandleStick,
     Transfer,
@@ -39,18 +39,18 @@ export const getProtocol = (): Protocol => {
     return protocol as Protocol;
 };
 
-export const getOrInitTakerVolumesByIntervalByCurrency = (
+export const getOrInitTakerVolumeByIntervalAndCurrency = (
     takerVolumeId: string,
     currency: Bytes,
     interval: BigInt,
     createdAt: BigInt,
     updatedAt: BigInt
-): TakerVolumesByIntervalsByCurrency => {
+): TakerVolumeByIntervalAndCurrency => {
     const id =
         takerVolumeId + '-' + interval.toString() + '-' + createdAt.toString();
-    let volume = TakerVolumesByIntervalsByCurrency.load(id);
+    let volume = TakerVolumeByIntervalAndCurrency.load(id);
     if (!volume) {
-        volume = new TakerVolumesByIntervalsByCurrency(id);
+        volume = new TakerVolumeByIntervalAndCurrency(id);
         volume.takerVolumesByCurrency = takerVolumeId;
         volume.currency = currency;
         volume.interval = interval;
@@ -59,7 +59,7 @@ export const getOrInitTakerVolumesByIntervalByCurrency = (
         volume.updatedAt = updatedAt;
         volume.save();
     }
-    return volume as TakerVolumesByIntervalsByCurrency;
+    return volume as TakerVolumeByIntervalAndCurrency;
 };
 
 export const updateOrInitProtocolVolume = (
@@ -117,7 +117,7 @@ export const updateOrInitTakerVolume = (
             blockTimestamp.mod(BigInt.fromI32(interval))
         );
         // Update or initialize the interval transaction volume
-        const volume = getOrInitTakerVolumesByIntervalByCurrency(
+        const volume = getOrInitTakerVolumeByIntervalAndCurrency(
             takerVolume.id,
             currency,
             BigInt.fromI32(intervals[i]),

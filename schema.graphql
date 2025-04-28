@@ -118,7 +118,7 @@ type TakerVolumeByCurrency @entity {
   user: User!
   currency: Bytes!
   totalVolume: BigInt!
-  totalVolumeByInterval: [TakerVolumesByIntervalsByCurrency!]! @derivedFrom(field: "takerVolumesByCurrency")
+  totalVolumesByInterval: [TakerVolumeByIntervalAndCurrency!]! @derivedFrom(field: "takerVolumesByCurrency")
 }
 
 type Liquidation @entity {
@@ -174,7 +174,7 @@ type TransactionCandleStick @entity {
   lendingMarket: LendingMarket!
 }
 
-type TakerVolumesByIntervalsByCurrency @entity {
+type TakerVolumeByIntervalAndCurrency @entity {
   id: ID! # Composite ID, e.g., "user-currency-interval-createdAt"
   takerVolumesByCurrency: TakerVolumeByCurrency!
   currency: Bytes!
