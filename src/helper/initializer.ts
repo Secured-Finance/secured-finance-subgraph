@@ -47,11 +47,7 @@ export const getOrInitTakerVolumesByIntervalByCurrency = (
     updatedAt: BigInt
 ): TakerVolumesByIntervalsByCurrency => {
     const id =
-        takerVolumeId +
-        '-' +
-        interval.toString() +
-        '-' +
-        createdAt.toString();
+        takerVolumeId + '-' + interval.toString() + '-' + createdAt.toString();
     let volume = TakerVolumesByIntervalsByCurrency.load(id);
     if (!volume) {
         volume = new TakerVolumesByIntervalsByCurrency(id);
