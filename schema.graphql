@@ -88,7 +88,7 @@ type User @entity {
   transfers: [Transfer!]! @derivedFrom(field: "user")
   deposits: [Deposit!]! @derivedFrom(field: "user")
   takerVolumesByCurrency: [TakerVolumeByCurrency!]! @derivedFrom(field: "user")
-  TransactionVolumeByIntervals: [TransactionVolumeByIntervals!]! @derivedFrom(field: "user")
+  transactionVolumeByIntervals: [TransactionVolumeByIntervals!]! @derivedFrom(field: "user")
 }
 
 type DailyVolume @entity {
