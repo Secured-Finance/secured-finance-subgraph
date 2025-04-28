@@ -8,7 +8,6 @@ import {
 import {
     DailyVolume,
     Deposit,
-    HourlyTransactionVolume,
     LendingMarket,
     Liquidation,
     Order,
@@ -17,15 +16,16 @@ import {
     TakerVolumeByCurrency,
     Transaction,
     TransactionCandleStick,
+    TransactionVolumeByIntervals,
     Transfer,
     User,
 } from '../../generated/schema';
+import { intervals } from '../mappings/lending-market';
 import {
     getDailyVolumeEntityId,
     getTransactionCandleStickEntityId,
 } from '../utils/id-generation';
 import { buildLendingMarketId } from '../utils/string';
-import { intervals } from '../mappings/lending-market';
 
 const PROTOCOL_ID = '1';
 
@@ -212,14 +212,14 @@ export const initOrder = (
     log.debug('Order created with: {}', [id]);
 };
 
-export const getOrInitHourlyTransactionVolume = (
+export const getOrInitTransactionVolumeByInterval = (
     user: User,
     currency: Bytes,
     interval: BigInt,
     lendingMarketId: string,
     createdAt: BigInt,
     updatedAt: BigInt
-): HourlyTransactionVolume => {
+): TransactionVolumeByIntervals => {
     const id =
         user.id +
         '-' +
@@ -230,19 +230,19 @@ export const getOrInitHourlyTransactionVolume = (
         createdAt.toString() +
         '-' +
         lendingMarketId;
-    let hourlyVolume = HourlyTransactionVolume.load(id);
-    if (!hourlyVolume) {
-        hourlyVolume = new HourlyTransactionVolume(id);
-        hourlyVolume.user = user.id;
-        hourlyVolume.currency = currency;
-        hourlyVolume.interval = interval;
-        hourlyVolume.createdAt = createdAt;
-        hourlyVolume.volume = BigInt.fromI32(0);
-        hourlyVolume.lendingMarket = lendingMarketId;
-        hourlyVolume.updatedAt = updatedAt;
-        hourlyVolume.save();
+    let volume = TransactionVolumeByIntervals.load(id);
+    if (!volume) {
+        volume = new TransactionVolumeByIntervals(id);
+        volume.user = user.id;
+        volume.currency = currency;
+        volume.interval = interval;
+        volume.createdAt = createdAt;
+        volume.volume = BigInt.fromI32(0);
+        volume.lendingMarket = lendingMarketId;
+        volume.updatedAt = updatedAt;
+        volume.save();
     }
-    return hourlyVolume as HourlyTransactionVolume;
+    return volume as TransactionVolumeByIntervals;
 };
 
 export const initTransaction = (
@@ -292,15 +292,15 @@ export const initTransaction = (
     user.transactionCount = user.transactionCount.plus(BigInt.fromI32(1));
     user.save();
 
-    if (executionType !== 'Maker') {
+    if (executionType === 'Taker') {
         for (let i = 0; i < intervals.length; i++) {
             const interval = intervals[i];
-            // Calculate the start of the hour
+            // Calculate the start of the interval
             const createdAt = timestamp.minus(
                 timestamp.mod(BigInt.fromI32(interval))
             );
-            // Update or initialize the hourly transaction volume
-            const hourlyVolume = getOrInitHourlyTransactionVolume(
+            // Update or initialize the interval transaction volume
+            const volume = getOrInitTransactionVolumeByInterval(
                 user,
                 currency,
                 BigInt.fromI32(intervals[i]),
@@ -308,9 +308,9 @@ export const initTransaction = (
                 createdAt,
                 timestamp
             );
-            hourlyVolume.volume = hourlyVolume.volume.plus(filledAmount);
-            hourlyVolume.updatedAt = timestamp;
-            hourlyVolume.save();
+            volume.volume = volume.volume.plus(filledAmount);
+            volume.updatedAt = timestamp;
+            volume.save();
         }
     }
 };
