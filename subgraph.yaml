@@ -58,7 +58,7 @@ dataSources:
       entities:
         - Order
         - Transaction
-        - TransactionVolumeByIntervals
+        - TakerVolumesByIntervalsByCurrency
       abis:
         - name: LendingMarketController
           file: ./abis/FundManagementLogic.json
@@ -100,7 +100,7 @@ templates:
         - DailyVolume
         - TakerVolumeByCurrency
         - ProtocolVolumeByCurrency
-        - TransactionVolumeByIntervals
+        - TakerVolumesByIntervalsByCurrency
       abis:
         - name: OrderActionLogic
           file: ./abis/OrderActionLogic.json

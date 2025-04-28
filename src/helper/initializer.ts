@@ -14,9 +14,9 @@ import {
     Protocol,
     ProtocolVolumeByCurrency,
     TakerVolumeByCurrency,
+    TakerVolumesByIntervalsByCurrency,
     Transaction,
     TransactionCandleStick,
-    TransactionVolumeByIntervals,
     Transfer,
     User,
 } from '../../generated/schema';
@@ -212,14 +212,14 @@ export const initOrder = (
     log.debug('Order created with: {}', [id]);
 };
 
-export const getOrInitTransactionVolumeByInterval = (
+export const getOrInitTakerVolumesByIntervalByCurrency = (
     user: User,
     currency: Bytes,
     interval: BigInt,
     lendingMarketId: string,
     createdAt: BigInt,
     updatedAt: BigInt
-): TransactionVolumeByIntervals => {
+): TakerVolumesByIntervalsByCurrency => {
     const id =
         user.id +
         '-' +
@@ -230,9 +230,9 @@ export const getOrInitTransactionVolumeByInterval = (
         createdAt.toString() +
         '-' +
         lendingMarketId;
-    let volume = TransactionVolumeByIntervals.load(id);
+    let volume = TakerVolumesByIntervalsByCurrency.load(id);
     if (!volume) {
-        volume = new TransactionVolumeByIntervals(id);
+        volume = new TakerVolumesByIntervalsByCurrency(id);
         volume.user = user.id;
         volume.currency = currency;
         volume.interval = interval;
@@ -242,7 +242,7 @@ export const getOrInitTransactionVolumeByInterval = (
         volume.updatedAt = updatedAt;
         volume.save();
     }
-    return volume as TransactionVolumeByIntervals;
+    return volume as TakerVolumesByIntervalsByCurrency;
 };
 
 export const initTransaction = (
@@ -300,7 +300,7 @@ export const initTransaction = (
                 timestamp.mod(BigInt.fromI32(interval))
             );
             // Update or initialize the interval transaction volume
-            const volume = getOrInitTransactionVolumeByInterval(
+            const volume = getOrInitTakerVolumesByIntervalByCurrency(
                 user,
                 currency,
                 BigInt.fromI32(intervals[i]),

@@ -88,7 +88,7 @@ type User @entity {
   transfers: [Transfer!]! @derivedFrom(field: "user")
   deposits: [Deposit!]! @derivedFrom(field: "user")
   takerVolumesByCurrency: [TakerVolumeByCurrency!]! @derivedFrom(field: "user")
-  transactionVolumeByIntervals: [TransactionVolumeByIntervals!]! @derivedFrom(field: "user")
+  takerVolumesByIntervalsByCurrency: [TakerVolumesByIntervalsByCurrency!]! @derivedFrom(field: "user")
 }
 
 type DailyVolume @entity {
@@ -174,7 +174,7 @@ type TransactionCandleStick @entity {
   lendingMarket: LendingMarket!
 }
 
-type TransactionVolumeByIntervals @entity {
+type TakerVolumesByIntervalsByCurrency @entity {
   id: ID! # Composite ID, e.g., "user-currency-interval"
   user: User!
   currency: Bytes!
