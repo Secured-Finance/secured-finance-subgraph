@@ -110,7 +110,8 @@ export function handleOrderExecuted(event: OrderExecuted): void {
         updateOrInitTakerVolume(
             event.params.filledAmount,
             event.params.ccy,
-            event.params.user
+            event.params.user,
+            event.block.timestamp
         );
 
         for (let i = 0; i < intervals.length; i++) {
@@ -221,7 +222,8 @@ export function handlePositionUnwound(event: PositionUnwound): void {
         updateOrInitTakerVolume(
             event.params.filledAmount,
             event.params.ccy,
-            event.params.user
+            event.params.user,
+            event.block.timestamp
         );
 
         for (let i = 0; i < intervals.length; i++) {

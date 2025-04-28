@@ -60,7 +60,8 @@ export const updateOrInitProtocolVolume = (
 export const updateOrInitTakerVolume = (
     amount: BigInt,
     currency: Bytes,
-    userAddress: Address
+    userAddress: Address,
+    blockTimestamp: BigInt
 ): TakerVolumeByCurrency => {
     const userId = userAddress.toHexString();
     const id = userId + '-' + currency.toHexString();
@@ -74,7 +75,7 @@ export const updateOrInitTakerVolume = (
             user.orderCount = BigInt.fromI32(0);
             user.liquidationCount = BigInt.fromI32(0);
             user.transferCount = BigInt.fromI32(0);
-            user.createdAt = BigInt.fromI32(0);
+            user.createdAt = blockTimestamp;
             user.save();
         }
         takerVolume = new TakerVolumeByCurrency(id);
