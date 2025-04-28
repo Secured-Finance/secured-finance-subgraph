@@ -49,8 +49,6 @@ export const getOrInitTakerVolumesByIntervalByCurrency = (
     const id =
         takerVolumeId +
         '-' +
-        currency.toHexString() +
-        '-' +
         interval.toString() +
         '-' +
         createdAt.toString();
