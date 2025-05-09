@@ -1,5 +1,6 @@
 import { readFileSync, writeFileSync } from 'fs';
 import { dump, load } from 'js-yaml';
+import { EmptyDeployment } from './update-subgraphrc';
 
 const arrowedNetworks = [
     'development',
@@ -50,13 +51,25 @@ class Main {
             process.exit(1);
         }
 
+        const path = `${process.cwd()}/deployment.json`;
+        const jsonText = readFileSync(path, 'utf8');
+        const deploymentData = JSON.parse(jsonText) as Record<
+            string,
+            EmptyDeployment
+        >;
+
         for (const dataSource of data.dataSources) {
             const deployment = await import(
                 `@secured-finance/contracts/deployments/${this.network}/${dataSource.source.abi}.json`
             );
 
             const proxyAddress = deployment.address;
+
             dataSource.source.address = proxyAddress;
+            const startBlock = deploymentData[this.network].startBlock || 0;
+            if (startBlock > 0) {
+                dataSource.source.startBlock = startBlock;
+            }
             dataSource.network = network;
             if (this.network === 'filecoin-mainnet') {
                 const blockNumber = deployment.receipt.blockNumber;
