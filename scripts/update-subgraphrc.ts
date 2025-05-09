@@ -15,14 +15,14 @@ const arrowedNetworks = [
 ] as const;
 type Network = (typeof arrowedNetworks)[number];
 
-export type EMPTY_DEPLOYMENT = {
+export type EmptyDeployment = {
     isMajorUpdate: boolean;
     isMinorUpdate: boolean;
     version: string;
     startBlock?: number;
 };
 
-const EMPTY_DEPLOYMENT: EMPTY_DEPLOYMENT = {
+const EMPTY_DEPLOYMENT: EmptyDeployment = {
     isMajorUpdate: false,
     isMinorUpdate: false,
     version: '0.0.0',
@@ -43,7 +43,7 @@ class Main {
     run() {
         const path = `${process.cwd()}/deployment.json`;
         const jsonText = readFileSync(path, 'utf8');
-        const data = JSON.parse(jsonText) as Record<string, EMPTY_DEPLOYMENT>;
+        const data = JSON.parse(jsonText) as Record<string, EmptyDeployment>;
 
         if (!data[this.network as Network]) {
             data[this.network] = EMPTY_DEPLOYMENT;
