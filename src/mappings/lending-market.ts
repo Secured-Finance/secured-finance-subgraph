@@ -14,10 +14,14 @@ import {
     initOrUpdateTransactionCandleStick,
     initOrder,
     initTransaction,
+    updateOrInitProtocolVolume,
+    updateOrInitTakerVolume,
 } from '../helper/initializer';
 import { getOrderEntityId } from '../utils/id-generation';
 
-const intervals = [300, 900, 1800, 3600, 14400, 86400, 259200, 604800, 2592000]; // [5min, 15min, 30min, 1h, 4h, 1d, 3d, 1w, 1m]
+export const intervals = [
+    300, 900, 1800, 3600, 14400, 86400, 259200, 604800, 2592000,
+]; // [5min, 15min, 30min, 1h, 4h, 1d, 3d, 1w, 1m]
 
 export function handleOrderExecuted(event: OrderExecuted): void {
     let orderId = getOrderEntityId(
@@ -100,6 +104,15 @@ export function handleOrderExecuted(event: OrderExecuted): void {
             event.block.timestamp
         );
         addToTransactionVolume(event.params.filledAmount, dailyVolume);
+
+        // Update protocol and taker trading volumes
+        updateOrInitProtocolVolume(event.params.filledAmount, event.params.ccy);
+        updateOrInitTakerVolume(
+            event.params.filledAmount,
+            event.params.ccy,
+            event.params.user,
+            event.block.timestamp
+        );
 
         for (let i = 0; i < intervals.length; i++) {
             initOrUpdateTransactionCandleStick(
@@ -201,7 +214,18 @@ export function handlePositionUnwound(event: PositionUnwound): void {
             event.params.maturity,
             event.block.timestamp
         );
+
         addToTransactionVolume(event.params.filledAmount, dailyVolume);
+
+        // Update protocol and taker trading volumes
+        updateOrInitProtocolVolume(event.params.filledAmount, event.params.ccy);
+        updateOrInitTakerVolume(
+            event.params.filledAmount,
+            event.params.ccy,
+            event.params.user,
+            event.block.timestamp
+        );
+
         for (let i = 0; i < intervals.length; i++) {
             initOrUpdateTransactionCandleStick(
                 event.params.ccy,
@@ -305,6 +329,9 @@ export function handleItayoseExecuted(event: ItayoseExecuted): void {
         event.block.timestamp
     );
     addToTransactionVolume(event.params.offsetAmount, dailyVolume);
+
+    // Update protocol trading volume (no user volume for itayose)
+    updateOrInitProtocolVolume(event.params.offsetAmount, event.params.ccy);
 
     const offsetAmountInFV = calculateForwardValue(
         event.params.offsetAmount,

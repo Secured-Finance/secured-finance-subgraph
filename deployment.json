@@ -2,12 +2,12 @@
   "development": {
     "isMajorUpdate": false,
     "isMinorUpdate": false,
-    "version": "0.1.4"
+    "version": "0.1.6"
   },
   "development-arb": {
     "isMajorUpdate": false,
     "isMinorUpdate": false,
-    "version": "0.1.1"
+    "version": "0.1.2"
   },
   "development-fil": {
     "isMajorUpdate": false,
@@ -17,12 +17,12 @@
   "staging": {
     "isMajorUpdate": false,
     "isMinorUpdate": false,
-    "version": "0.1.1"
+    "version": "0.1.2"
   },
   "staging-arb": {
     "isMajorUpdate": false,
     "isMinorUpdate": false,
-    "version": "0.1.1"
+    "version": "0.1.2"
   },
   "staging-fil": {
     "isMajorUpdate": false,
@@ -32,29 +32,29 @@
   "sepolia": {
     "isMajorUpdate": false,
     "isMinorUpdate": false,
-    "version": "0.1.0"
+    "version": "0.1.1"
   },
   "mainnet": {
     "startBlock": 18780907,
     "isMajorUpdate": false,
     "isMinorUpdate": false,
-    "version": "0.1.0"
+    "version": "0.1.1"
   },
   "arbitrum-sepolia": {
     "isMajorUpdate": false,
     "isMinorUpdate": false,
-    "version": "0.1.0"
+    "version": "0.1.1"
   },
   "arbitrum-one": {
     "startBlock": 168608705,
     "isMajorUpdate": false,
     "isMinorUpdate": false,
-    "version": "0.1.0"
+    "version": "0.1.1"
   },
   "filecoin-mainnet": {
     "startBlock": 3998055,
     "isMajorUpdate": false,
     "isMinorUpdate": false,
-    "version": "0.0.1"
+    "version": "0.0.3"
   }
 }

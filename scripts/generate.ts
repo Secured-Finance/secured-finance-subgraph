@@ -71,6 +71,14 @@ class Main {
                 dataSource.source.startBlock = startBlock;
             }
             dataSource.network = network;
+            if (this.network === 'filecoin-mainnet') {
+                const blockNumber = deployment.receipt.blockNumber;
+                dataSource.source.startBlock =
+                    typeof blockNumber === 'string' &&
+                    blockNumber.startsWith('0x')
+                        ? parseInt(blockNumber, 16)
+                        : blockNumber;
+            }
         }
 
         for (const template of data.templates) {

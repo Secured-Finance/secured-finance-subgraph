@@ -12,11 +12,15 @@ import {
     Liquidation,
     Order,
     Protocol,
+    ProtocolVolumeByCurrency,
+    TakerVolumeByCurrency,
+    TakerVolumeByIntervalAndCurrency,
     Transaction,
     TransactionCandleStick,
     Transfer,
     User,
 } from '../../generated/schema';
+import { intervals } from '../mappings/lending-market';
 import {
     getDailyVolumeEntityId,
     getTransactionCandleStickEntityId,
@@ -33,6 +37,98 @@ export const getProtocol = (): Protocol => {
         protocol.save();
     }
     return protocol as Protocol;
+};
+
+export const getOrInitTakerVolumeByIntervalAndCurrency = (
+    takerVolumeId: string,
+    currency: Bytes,
+    interval: BigInt,
+    createdAt: BigInt,
+    updatedAt: BigInt
+): TakerVolumeByIntervalAndCurrency => {
+    const id =
+        takerVolumeId + '-' + interval.toString() + '-' + createdAt.toString();
+    let volume = TakerVolumeByIntervalAndCurrency.load(id);
+    if (!volume) {
+        volume = new TakerVolumeByIntervalAndCurrency(id);
+        volume.takerVolumesByCurrency = takerVolumeId;
+        volume.currency = currency;
+        volume.interval = interval;
+        volume.createdAt = createdAt;
+        volume.volume = BigInt.fromI32(0);
+        volume.updatedAt = updatedAt;
+        volume.save();
+    }
+    return volume as TakerVolumeByIntervalAndCurrency;
+};
+
+export const updateOrInitProtocolVolume = (
+    amount: BigInt,
+    currency: Bytes
+): ProtocolVolumeByCurrency => {
+    const protocol = getProtocol();
+    let protocolVolume = ProtocolVolumeByCurrency.load(currency.toHexString());
+    if (!protocolVolume) {
+        protocolVolume = new ProtocolVolumeByCurrency(currency.toHexString());
+        protocolVolume.protocol = protocol.id;
+        protocolVolume.currency = currency;
+        protocolVolume.totalVolume = amount;
+    } else {
+        protocolVolume.totalVolume = protocolVolume.totalVolume.plus(amount);
+    }
+    protocolVolume.save();
+    return protocolVolume as ProtocolVolumeByCurrency;
+};
+
+export const updateOrInitTakerVolume = (
+    amount: BigInt,
+    currency: Bytes,
+    userAddress: Address,
+    blockTimestamp: BigInt
+): TakerVolumeByCurrency => {
+    const userId = userAddress.toHexString();
+    const id = userId + '-' + currency.toHexString();
+
+    let takerVolume = TakerVolumeByCurrency.load(id);
+    if (!takerVolume) {
+        let user = User.load(userAddress.toHexString());
+        if (!user) {
+            user = new User(userAddress.toHexString());
+            user.transactionCount = BigInt.fromI32(0);
+            user.orderCount = BigInt.fromI32(0);
+            user.liquidationCount = BigInt.fromI32(0);
+            user.transferCount = BigInt.fromI32(0);
+            user.createdAt = blockTimestamp;
+            user.save();
+        }
+        takerVolume = new TakerVolumeByCurrency(id);
+        takerVolume.user = user.id;
+        takerVolume.currency = currency;
+        takerVolume.totalVolume = amount;
+    } else {
+        takerVolume.totalVolume = takerVolume.totalVolume.plus(amount);
+    }
+    takerVolume.save();
+
+    for (let i = 0; i < intervals.length; i++) {
+        const interval = intervals[i];
+        // Calculate the start of the interval
+        const createdAt = blockTimestamp.minus(
+            blockTimestamp.mod(BigInt.fromI32(interval))
+        );
+        // Update or initialize the interval transaction volume
+        const volume = getOrInitTakerVolumeByIntervalAndCurrency(
+            takerVolume.id,
+            currency,
+            BigInt.fromI32(intervals[i]),
+            createdAt,
+            blockTimestamp
+        );
+        volume.volume = volume.volume.plus(amount);
+        volume.updatedAt = blockTimestamp;
+        volume.save();
+    }
+    return takerVolume as TakerVolumeByCurrency;
 };
 
 const getISO8601Date = (date: BigInt): string => {
@@ -194,7 +290,8 @@ export const initTransaction = (
     transaction.averagePrice = !filledAmountInFV.isZero()
         ? filledAmount.divDecimal(new BigDecimal(filledAmountInFV))
         : BigDecimal.zero();
-    transaction.lendingMarket = getOrInitLendingMarket(currency, maturity).id;
+    const lendingMarket = getOrInitLendingMarket(currency, maturity);
+    transaction.lendingMarket = lendingMarket.id;
     transaction.createdAt = timestamp;
     transaction.blockNumber = blockNumber;
     transaction.txHash = txHash;
@@ -319,12 +416,12 @@ export const initOrUpdateTransactionCandleStick = (
         ).id;
     } else {
         transactionCandleStick.close = executionPrice;
-        transactionCandleStick.high = BigInt.fromI32(
-            max(transactionCandleStick.high.toI32(), executionPrice.toI32())
-        );
-        transactionCandleStick.low = BigInt.fromI32(
-            min(transactionCandleStick.low.toI32(), executionPrice.toI32())
-        );
+        if (transactionCandleStick.high.toI32() < executionPrice.toI32()) {
+            transactionCandleStick.high = executionPrice;
+        }
+        if (transactionCandleStick.low.toI32() > executionPrice.toI32()) {
+            transactionCandleStick.low = executionPrice;
+        }
         transactionCandleStick.average = transactionCandleStick.average
             .times(transactionCandleStick.volume.toBigDecimal())
             .plus(executionPrice.times(amount).toBigDecimal())
