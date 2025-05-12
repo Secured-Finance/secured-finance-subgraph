@@ -67,18 +67,9 @@ class Main {
 
             dataSource.source.address = proxyAddress;
             const startBlock = deploymentData[this.network].startBlock || 0;
-            if (startBlock > 0) {
-                dataSource.source.startBlock = startBlock;
-            }
+
+            dataSource.source.startBlock = startBlock;
             dataSource.network = network;
-            if (this.network === 'filecoin-mainnet') {
-                const blockNumber = deployment.receipt.blockNumber;
-                dataSource.source.startBlock =
-                    typeof blockNumber === 'string' &&
-                    blockNumber.startsWith('0x')
-                        ? parseInt(blockNumber, 16)
-                        : blockNumber;
-            }
         }
 
         for (const template of data.templates) {
