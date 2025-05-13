@@ -35,6 +35,7 @@
     "version": "0.1.1"
   },
   "mainnet": {
+    "startBlock": 18780907,
     "isMajorUpdate": false,
     "isMinorUpdate": false,
     "version": "0.1.1"
@@ -45,11 +46,13 @@
     "version": "0.1.1"
   },
   "arbitrum-one": {
+    "startBlock": 168608705,
     "isMajorUpdate": false,
     "isMinorUpdate": false,
     "version": "0.1.1"
   },
   "filecoin-mainnet": {
+    "startBlock": 3998055,
     "isMajorUpdate": false,
     "isMinorUpdate": false,
     "version": "0.0.3"
