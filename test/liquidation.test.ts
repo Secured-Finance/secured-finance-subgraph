@@ -1,10 +1,10 @@
 import { BigInt } from '@graphprotocol/graph-ts';
 import { assert, describe, test } from 'matchstick-as/assembly/index';
-import { handleLiquidationExecuted } from '../src/mappings/liquidation';
+import { getOrInitUser } from '../src/initializers';
+import { handleLiquidationExecuted } from '../src/mappings';
 import { toBytes32 } from '../src/utils/helper/string';
 import { createLiquidationExecutedEvent } from './mocks';
 import { ALICE } from './utils/createEntities';
-import { getOrInitUser } from '../src/initializers';
 
 const filBytes = toBytes32('FIL');
 const ethBytes = toBytes32('ETH');

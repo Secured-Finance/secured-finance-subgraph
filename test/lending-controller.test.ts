@@ -10,7 +10,7 @@ import {
 import {
     handleOrderBookCreated,
     handleOrderBooksRotated,
-} from '../src/mappings/lendingController';
+} from '../src/mappings';
 import { buildLendingMarketId, toBytes32 } from '../src/utils/helper/string';
 import {
     createOrderBookCreatedEvent,

@@ -6,7 +6,7 @@ import {
     describe,
     test,
 } from 'matchstick-as/assembly/index';
-import { handleDeposit, handleWithdraw } from '../src/mappings/tokenVault';
+import { handleDeposit, handleWithdraw } from '../src/mappings';
 import { toBytes20, toBytes32 } from '../src/utils/helper/string';
 import { createDepositEvent, createWithdrawEvent } from './mocks';
 import { ALICE } from './utils/createEntities';

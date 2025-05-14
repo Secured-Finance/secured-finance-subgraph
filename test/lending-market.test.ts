@@ -7,15 +7,8 @@ import {
     test,
 } from 'matchstick-as/assembly/index';
 
-import { handleOrderPartiallyFilled } from '../src/mappings/fundManagement';
-import {
-    handleItayoseExecuted,
-    handleOrderCanceled,
-    handleOrderExecuted,
-    handleOrdersCleaned,
-    handlePositionUnwound,
-    handlePreOrderExecuted,
-} from '../src/mappings/lendingMarket';
+import { getOrInitProtocol, getOrInitUser } from '../src/initializers';
+import { handleOrderPartiallyFilled } from '../src/mappings/fund-management';
 import {
     getDailyVolumeEntityId,
     getOrderEntityId,
@@ -32,7 +25,14 @@ import {
     createPreOrderExecutedEvent,
 } from './mocks';
 import { ALICE, BOB, createLendingMarket } from './utils/createEntities';
-import { getOrInitProtocol, getOrInitUser } from '../src/initializers';
+import {
+    handleItayoseExecuted,
+    handleOrderCanceled,
+    handleOrderExecuted,
+    handleOrdersCleaned,
+    handlePositionUnwound,
+    handlePreOrderExecuted,
+} from '../src/mappings';
 
 const lend = 0;
 const borrow = 1;
