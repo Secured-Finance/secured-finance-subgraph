@@ -6,8 +6,8 @@ import {
     describe,
     test,
 } from 'matchstick-as/assembly/index';
-import { getOrInitUser, getProtocol } from '../src/helper/initializer';
-import { handleOrderPartiallyFilled } from '../src/mappings/fund-management';
+
+import { handleOrderPartiallyFilled } from '../src/mappings/fundManagement';
 import {
     handleItayoseExecuted,
     handleOrderCanceled,
@@ -15,13 +15,13 @@ import {
     handleOrdersCleaned,
     handlePositionUnwound,
     handlePreOrderExecuted,
-} from '../src/mappings/lending-market';
+} from '../src/mappings/lendingMarket';
 import {
     getDailyVolumeEntityId,
     getOrderEntityId,
     getTransactionCandleStickEntityId,
-} from '../src/utils/id-generation';
-import { toBytes32 } from '../src/utils/string';
+} from '../src/utils/helper/id-generation';
+import { toBytes32 } from '../src/utils/helper/string';
 import {
     createItayoseExecutedEvent,
     createOrderCanceledEvent,
@@ -32,6 +32,7 @@ import {
     createPreOrderExecutedEvent,
 } from './mocks';
 import { ALICE, BOB, createLendingMarket } from './utils/createEntities';
+import { getOrInitProtocol, getOrInitUser } from '../src/initializers';
 
 const lend = 0;
 const borrow = 1;
@@ -93,7 +94,7 @@ describe('Order Executed', () => {
         assert.stringEquals(orders[0].id, id);
         assert.bigIntEquals(alice.createdAt, event.block.timestamp);
 
-        const protocol = getProtocol();
+        const protocol = getOrInitProtocol();
         assert.fieldEquals('Protocol', protocol.id, 'totalUsers', '1');
     });
 
