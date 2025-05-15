@@ -6,7 +6,7 @@ import {
     initOrUpdateProtocolVolume,
     initOrUpdateTransactionCandleStick,
 } from '../initializers';
-import { intervals } from '../utils/constant';
+import { INTERVALS } from '../utils/constant';
 import { addToTransactionVolume, calculateForwardValue } from '../utils/helper';
 
 export function handleItayoseExecuted(event: ItayoseExecuted): void {
@@ -34,7 +34,7 @@ export function handleItayoseExecuted(event: ItayoseExecuted): void {
         event.params.offsetAmount,
         event.params.openingUnitPrice
     );
-    for (let i = 0; i < intervals.length; i++) {
+    for (let i = 0; i < INTERVALS.length; i++) {
         initOrUpdateTransactionCandleStick(
             event.params.ccy,
             event.params.maturity,
@@ -42,7 +42,7 @@ export function handleItayoseExecuted(event: ItayoseExecuted): void {
             offsetAmountInFV,
             event.params.openingUnitPrice,
             event.block.timestamp,
-            BigInt.fromI32(intervals[i])
+            BigInt.fromI32(INTERVALS[i])
         );
     }
 }

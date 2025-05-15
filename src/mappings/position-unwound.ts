@@ -8,7 +8,7 @@ import {
     initOrder,
     initTransaction,
 } from '../initializers';
-import { intervals } from '../utils/constant';
+import { INTERVALS } from '../utils/constant';
 import { addToTransactionVolume } from '../utils/helper';
 import { getOrderEntityId } from '../utils/helper/id-generation';
 
@@ -84,7 +84,7 @@ export function handlePositionUnwound(event: PositionUnwound): void {
             event.block.timestamp
         );
 
-        for (let i = 0; i < intervals.length; i++) {
+        for (let i = 0; i < INTERVALS.length; i++) {
             initOrUpdateTransactionCandleStick(
                 event.params.ccy,
                 event.params.maturity,
@@ -92,7 +92,7 @@ export function handlePositionUnwound(event: PositionUnwound): void {
                 event.params.filledAmountInFV,
                 event.params.filledUnitPrice,
                 event.block.timestamp,
-                BigInt.fromI32(intervals[i])
+                BigInt.fromI32(INTERVALS[i])
             );
         }
     }

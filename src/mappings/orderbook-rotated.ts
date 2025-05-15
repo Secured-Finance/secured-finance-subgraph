@@ -1,12 +1,5 @@
-import {
-    OrderBookCreated,
-    OrderBooksRotated,
-} from '../../generated/LendingMarketOperationLogic/LendingMarketController';
+import { OrderBooksRotated } from '../../generated/LendingMarketOperationLogic/LendingMarketController';
 import { getOrInitLendingMarket } from '../initializers';
-
-export function handleOrderBookCreated(event: OrderBookCreated): void {
-    getOrInitLendingMarket(event.params.ccy, event.params.maturity);
-}
 
 // Load all transactions for the rolling market, and change their maturity to the closest one
 export function handleOrderBooksRotated(event: OrderBooksRotated): void {

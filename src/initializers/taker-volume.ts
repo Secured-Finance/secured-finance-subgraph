@@ -1,6 +1,6 @@
 import { Address, BigInt, Bytes } from '@graphprotocol/graph-ts';
 import { TakerVolumeByCurrency, User } from '../../generated/schema';
-import { intervals } from '../utils/constant';
+import { INTERVALS } from '../utils/constant';
 import { getOrInitTakerVolumeByIntervalAndCurrency } from './taker-volume-by-interval-and-currency';
 
 export const initOrUpdateTakerVolume = (
@@ -33,8 +33,8 @@ export const initOrUpdateTakerVolume = (
     }
     takerVolume.save();
 
-    for (let i = 0; i < intervals.length; i++) {
-        const interval = intervals[i];
+    for (let i = 0; i < INTERVALS.length; i++) {
+        const interval = INTERVALS[i];
         // Calculate the start of the interval
         const createdAt = blockTimestamp.minus(
             blockTimestamp.mod(BigInt.fromI32(interval))
@@ -43,7 +43,7 @@ export const initOrUpdateTakerVolume = (
         const volume = getOrInitTakerVolumeByIntervalAndCurrency(
             takerVolume.id,
             currency,
-            BigInt.fromI32(intervals[i]),
+            BigInt.fromI32(INTERVALS[i]),
             createdAt,
             blockTimestamp
         );

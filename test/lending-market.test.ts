@@ -8,7 +8,15 @@ import {
 } from 'matchstick-as/assembly/index';
 
 import { getOrInitProtocol, getOrInitUser } from '../src/initializers';
-import { handleOrderPartiallyFilled } from '../src/mappings/fund-management';
+import {
+    handleItayoseExecuted,
+    handleOrderCanceled,
+    handleOrderExecuted,
+    handleOrdersCleaned,
+    handlePositionUnwound,
+    handlePreOrderExecuted,
+} from '../src/mappings';
+import { handleOrderPartiallyFilled } from '../src/mappings/order-partially-filled';
 import {
     getDailyVolumeEntityId,
     getOrderEntityId,
@@ -25,14 +33,6 @@ import {
     createPreOrderExecutedEvent,
 } from './mocks';
 import { ALICE, BOB, createLendingMarket } from './utils/createEntities';
-import {
-    handleItayoseExecuted,
-    handleOrderCanceled,
-    handleOrderExecuted,
-    handleOrdersCleaned,
-    handlePositionUnwound,
-    handlePreOrderExecuted,
-} from '../src/mappings';
 
 const lend = 0;
 const borrow = 1;
@@ -41,7 +41,7 @@ const maturity = BigInt.fromI32(1677628800); // 1st Mar 23
 const amount = BigInt.fromI32(90);
 const unitPrice = BigInt.fromI32(9000);
 const timestamp = BigInt.fromI64(1675878200);
-const intervals = [300, 900, 1800, 3600, 14400, 86400, 259200, 604800, 2592000];
+const INTERVALS = [300, 900, 1800, 3600, 14400, 86400, 259200, 604800, 2592000];
 
 describe('Order Executed', () => {
     beforeEach(() => {
@@ -1897,7 +1897,7 @@ describe('Transaction Candle Stick', () => {
         handleOrderExecuted(event);
 
         for (let i = 0; i < 4; i++) {
-            const interval = BigInt.fromI32(intervals[i]);
+            const interval = BigInt.fromI32(INTERVALS[i]);
 
             const epochTime = timestamp.div(interval);
             const id = getTransactionCandleStickEntityId(
@@ -1986,7 +1986,7 @@ describe('Transaction Candle Stick', () => {
             .div(filledAmount.plus(filledAmount2).toBigDecimal());
 
         for (let i = 0; i < 4; i++) {
-            const interval = BigInt.fromI32(intervals[i]);
+            const interval = BigInt.fromI32(INTERVALS[i]);
 
             const epochTime = timestamp.div(interval);
             const id = getTransactionCandleStickEntityId(
@@ -2061,8 +2061,8 @@ describe('Transaction Candle Stick', () => {
         );
         handlePositionUnwound(event);
 
-        for (let i = 0; i < intervals.length; i++) {
-            const interval = BigInt.fromI32(intervals[i]);
+        for (let i = 0; i < INTERVALS.length; i++) {
+            const interval = BigInt.fromI32(INTERVALS[i]);
             const epochTime = timestamp.div(interval);
             const id = getTransactionCandleStickEntityId(
                 ccy,
@@ -2150,8 +2150,8 @@ describe('Transaction Candle Stick', () => {
         );
         handleItayoseExecuted(itayoseExecutedEvent);
 
-        for (let i = 0; i < intervals.length; i++) {
-            const interval = BigInt.fromI32(intervals[i]);
+        for (let i = 0; i < INTERVALS.length; i++) {
+            const interval = BigInt.fromI32(INTERVALS[i]);
             const epochTime = timestamp.div(interval);
             const id = getTransactionCandleStickEntityId(
                 ccy,
