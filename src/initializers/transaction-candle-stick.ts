@@ -1,6 +1,6 @@
 import { BigInt, Bytes } from '@graphprotocol/graph-ts';
 import { TransactionCandleStick } from '../../generated/schema';
-import { getTransactionCandleStickEntityId } from '../utils/helper';
+import { getTransactionCandleStickEntityId } from '../utils';
 import { getOrInitLendingMarket } from './lending-market';
 
 export const initOrUpdateTransactionCandleStick = (

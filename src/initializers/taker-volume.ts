@@ -1,6 +1,6 @@
 import { Address, BigInt, Bytes } from '@graphprotocol/graph-ts';
 import { TakerVolumeByCurrency, User } from '../../generated/schema';
-import { INTERVALS } from '../utils/constant';
+import { INTERVALS } from '../utils';
 import { getOrInitTakerVolumeByIntervalAndCurrency } from './taker-volume-by-interval-and-currency';
 
 export const initOrUpdateTakerVolume = (

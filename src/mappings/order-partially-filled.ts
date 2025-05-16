@@ -2,7 +2,8 @@ import { BigInt } from '@graphprotocol/graph-ts';
 import { OrderPartiallyFilled } from '../../generated/FundManagementLogic/LendingMarketController';
 import { Order } from '../../generated/schema';
 import { initTransaction } from '../initializers';
-import { getOrderEntityId } from '../utils/helper/id-generation';
+import { getOrderEntityId } from '../utils';
+import { OrderStatus, TransactionType } from '../utils/types';
 
 export function handleOrderPartiallyFilled(event: OrderPartiallyFilled): void {
     const orderId = getOrderEntityId(
@@ -13,7 +14,7 @@ export function handleOrderPartiallyFilled(event: OrderPartiallyFilled): void {
     const order = Order.load(orderId);
     if (order) {
         order.filledAmount = order.filledAmount.plus(event.params.amount);
-        order.status = 'PartiallyFilled';
+        order.status = OrderStatus.PartiallyFilled;
         order.statusUpdatedAt = event.block.timestamp;
         order.save();
 
@@ -32,7 +33,7 @@ export function handleOrderPartiallyFilled(event: OrderPartiallyFilled): void {
             event.params.amount,
             event.params.amountInFV,
             BigInt.fromI32(0),
-            'Maker',
+            TransactionType.Maker,
             event.block.timestamp,
             event.block.number,
             event.transaction.hash

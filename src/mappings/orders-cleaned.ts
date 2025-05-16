@@ -3,8 +3,8 @@ import { Order } from '../../generated/schema';
 import { OrdersCleaned } from '../../generated/templates/OrderActionLogic/OrderActionLogic';
 
 import { getOrInitLendingMarket, initTransaction } from '../initializers';
-import { calculateForwardValue } from '../utils/helper';
-import { getOrderEntityId } from '../utils/helper/id-generation';
+import { calculateForwardValue, getOrderEntityId } from '../utils';
+import { OrderStatus, TransactionType } from '../utils/types';
 
 export function handleOrdersCleaned(event: OrdersCleaned): void {
     for (let i = 0; i < event.params.orderIds.length; i++) {
@@ -51,13 +51,13 @@ export function handleOrdersCleaned(event: OrdersCleaned): void {
                     unitPrice
                 ),
                 BigInt.fromI32(0),
-                'Maker',
+                TransactionType.Maker,
                 event.block.timestamp,
                 event.block.number,
                 event.transaction.hash
             );
             order.filledAmount = order.inputAmount;
-            order.status = 'Filled';
+            order.status = OrderStatus.Filled;
             order.statusUpdatedAt = event.block.timestamp;
             order.save();
         }

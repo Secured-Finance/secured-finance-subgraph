@@ -1,6 +1,7 @@
 import { Order } from '../../generated/schema';
 import { OrderCanceled } from '../../generated/templates/OrderActionLogic/OrderActionLogic';
-import { getOrderEntityId } from '../utils/helper';
+import { getOrderEntityId } from '../utils';
+import { OrderStatus } from '../utils/types';
 
 export function handleOrderCanceled(event: OrderCanceled): void {
     const id = getOrderEntityId(
@@ -10,7 +11,7 @@ export function handleOrderCanceled(event: OrderCanceled): void {
     );
     const order = Order.load(id);
     if (order) {
-        order.status = 'Cancelled';
+        order.status = OrderStatus.Cancelled;
         order.statusUpdatedAt = event.block.timestamp;
         order.save();
     }

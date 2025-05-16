@@ -1,7 +1,8 @@
 import { BigInt } from '@graphprotocol/graph-ts';
 import { PreOrderExecuted } from '../../generated/templates/OrderActionLogic/OrderActionLogic';
 import { initOrder } from '../initializers';
-import { getOrderEntityId } from '../utils/helper/id-generation';
+import { getOrderEntityId } from '../utils';
+import { OrderStatus, OrderType } from '../utils/types';
 
 export function handlePreOrderExecuted(event: PreOrderExecuted): void {
     const id = getOrderEntityId(
@@ -19,9 +20,9 @@ export function handlePreOrderExecuted(event: PreOrderExecuted): void {
         event.params.unitPrice,
         event.params.amount,
         BigInt.fromI32(0),
-        'Open',
+        OrderStatus.Open,
         true,
-        'Limit',
+        OrderType.Limit,
         false,
         event.block.timestamp,
         event.block.number,

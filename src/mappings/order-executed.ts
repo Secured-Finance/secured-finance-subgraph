@@ -8,9 +8,8 @@ import {
     initOrUpdateTransactionCandleStick,
     initTransaction,
 } from '../initializers';
-import { INTERVALS } from '../utils/constant';
-import { addToTransactionVolume } from '../utils/helper';
-import { getOrderEntityId } from '../utils/helper/id-generation';
+import { INTERVALS, addToTransactionVolume, getOrderEntityId } from '../utils';
+import { OrderStatus, OrderType, TransactionType } from '../utils/types';
 
 export function handleOrderExecuted(event: OrderExecuted): void {
     let orderId = getOrderEntityId(
@@ -21,26 +20,26 @@ export function handleOrderExecuted(event: OrderExecuted): void {
     let status: string;
     let type: string;
     if (event.params.inputUnitPrice.isZero()) {
-        type = 'Market';
+        type = OrderType.Market;
     } else {
-        type = 'Limit';
+        type = OrderType.Limit;
     }
 
     if (event.params.filledAmount.equals(event.params.inputAmount)) {
-        status = 'Filled';
+        status = OrderStatus.Filled;
     } else if (
         event.params.inputAmount.equals(
             event.params.filledAmount.plus(event.params.placedAmount)
         )
     ) {
         if (event.params.filledAmount.isZero()) {
-            status = 'Open';
+            status = OrderStatus.Open;
         } else {
-            status = 'PartiallyFilled';
+            status = OrderStatus.PartiallyFilled;
         }
     } else {
         // set status to Killed for circuit breaker and partially filled Market orders
-        status = 'Killed';
+        status = OrderStatus.Killed;
     }
 
     if (event.params.placedOrderId.isZero()) {
@@ -82,7 +81,7 @@ export function handleOrderExecuted(event: OrderExecuted): void {
             event.params.filledAmount,
             event.params.filledAmountInFV,
             event.params.feeInFV,
-            'Taker',
+            TransactionType.Taker,
             event.block.timestamp,
             event.block.number,
             event.transaction.hash

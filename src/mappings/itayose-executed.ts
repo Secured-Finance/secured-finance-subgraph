@@ -6,8 +6,11 @@ import {
     initOrUpdateProtocolVolume,
     initOrUpdateTransactionCandleStick,
 } from '../initializers';
-import { INTERVALS } from '../utils/constant';
-import { addToTransactionVolume, calculateForwardValue } from '../utils/helper';
+import {
+    INTERVALS,
+    addToTransactionVolume,
+    calculateForwardValue,
+} from '../utils';
 
 export function handleItayoseExecuted(event: ItayoseExecuted): void {
     const lendingMarket = getOrInitLendingMarket(

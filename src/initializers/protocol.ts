@@ -1,6 +1,6 @@
 import { BigInt } from '@graphprotocol/graph-ts';
 import { Protocol } from '../../generated/schema';
-import { PROTOCOL_ID } from '../utils/constant';
+import { PROTOCOL_ID } from '../utils';
 
 export const getOrInitProtocol = (): Protocol => {
     let protocol = Protocol.load(PROTOCOL_ID);

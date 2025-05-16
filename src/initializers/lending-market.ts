@@ -1,6 +1,6 @@
 import { BigInt, Bytes, log } from '@graphprotocol/graph-ts';
 import { LendingMarket } from '../../generated/schema';
-import { buildLendingMarketId } from '../utils/helper';
+import { buildLendingMarketId } from '../utils';
 
 export const getOrInitLendingMarket = (
     ccy: Bytes,

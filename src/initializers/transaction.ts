@@ -10,7 +10,7 @@ export const initTransaction = (
     userAddress: Address,
     currency: Bytes,
     maturity: BigInt,
-    side: i32,
+    side: number,
     filledAmount: BigInt,
     filledAmountInFV: BigInt,
     feeInFV: BigInt,
@@ -31,7 +31,7 @@ export const initTransaction = (
     transaction.user = user.id;
     transaction.currency = currency;
     transaction.maturity = maturity;
-    transaction.side = side;
+    transaction.side = 0;
     transaction.executionType = executionType;
     transaction.futureValue = filledAmountInFV;
     transaction.amount = filledAmount;

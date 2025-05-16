@@ -8,9 +8,8 @@ import {
     initOrder,
     initTransaction,
 } from '../initializers';
-import { INTERVALS } from '../utils/constant';
-import { addToTransactionVolume } from '../utils/helper';
-import { getOrderEntityId } from '../utils/helper/id-generation';
+import { INTERVALS, addToTransactionVolume, getOrderEntityId } from '../utils';
+import { OrderStatus, OrderType, TransactionType } from '../utils/types';
 
 export function handlePositionUnwound(event: PositionUnwound): void {
     const orderId =
@@ -23,9 +22,9 @@ export function handlePositionUnwound(event: PositionUnwound): void {
         event.transaction.hash.toHexString();
     let status: string;
     if (event.params.filledAmountInFV.equals(event.params.inputFutureValue)) {
-        status = 'Filled';
+        status = OrderStatus.Filled;
     } else {
-        status = 'Killed';
+        status = OrderStatus.Killed;
     }
 
     initOrder(
@@ -40,7 +39,7 @@ export function handlePositionUnwound(event: PositionUnwound): void {
         event.params.filledAmountInFV,
         status,
         false,
-        'Unwind',
+        OrderType.Unwind,
         event.params.isCircuitBreakerTriggered,
         event.block.timestamp,
         event.block.number,
@@ -62,7 +61,7 @@ export function handlePositionUnwound(event: PositionUnwound): void {
             event.params.filledAmount,
             event.params.filledAmountInFV,
             event.params.feeInFV,
-            'Taker',
+            TransactionType.Taker,
             event.block.timestamp,
             event.block.number,
             event.transaction.hash

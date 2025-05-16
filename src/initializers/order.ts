@@ -8,7 +8,7 @@ export const initOrder = (
     orderId: BigInt,
     userAddress: Address,
     currency: Bytes,
-    side: i32,
+    side: number,
     maturity: BigInt,
     inputUnitPrice: BigInt,
     inputAmount: BigInt,
@@ -27,7 +27,7 @@ export const initOrder = (
     order.orderId = orderId;
     order.user = user.id;
     order.currency = currency;
-    order.side = side;
+    order.side = 0;
     order.maturity = maturity;
     order.inputUnitPrice = inputUnitPrice;
     order.filledAmount = filledAmount;
