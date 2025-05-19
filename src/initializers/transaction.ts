@@ -31,7 +31,7 @@ export const initTransaction = (
     transaction.user = user.id;
     transaction.currency = currency;
     transaction.maturity = maturity;
-    transaction.side = 0;
+    transaction.side = side == 0 ? 0 : 1;
     transaction.executionType = executionType;
     transaction.futureValue = filledAmountInFV;
     transaction.amount = filledAmount;

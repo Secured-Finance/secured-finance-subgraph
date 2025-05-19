@@ -1,4 +1,4 @@
-import { Address, BigInt } from '@graphprotocol/graph-ts';
+import { Address, BigInt, log } from '@graphprotocol/graph-ts';
 import { Order } from '../../generated/schema';
 import { OrdersCleaned } from '../../generated/templates/OrderActionLogic/OrderActionLogic';
 
@@ -27,14 +27,28 @@ export function handleOrdersCleaned(event: OrdersCleaned): void {
                 event.params.ccy,
                 event.params.maturity
             );
+            log.debug('Order ID: {}, isPreOrder: {}, side: {}, unitPrice: {}, lastLendUnitPrice: {}, lastBorrowUnitPrice: {}, openingUnitPrice: {}', [
+                orderId,
+                order.isPreOrder.toString(),
+                order.side.toString(),
+                unitPrice.toString(),
+                lendingMarket.lastLendUnitPrice.toString(),
+                lendingMarket.lastBorrowUnitPrice.toString(),
+                lendingMarket.openingUnitPrice.toString()
+            ]);
+            
             if (
                 order.isPreOrder &&
                 !lendingMarket.openingUnitPrice.isZero() &&
                 ((order.side == 0 &&
-                    unitPrice >= lendingMarket.lastLendUnitPrice) ||
+                    unitPrice.ge(lendingMarket.lastLendUnitPrice)) ||
                     (order.side == 1 &&
-                        unitPrice <= lendingMarket.lastBorrowUnitPrice))
+                        unitPrice.le(lendingMarket.lastBorrowUnitPrice)))
             ) {
+                log.debug('Condition met for order: {}, setting unitPrice to openingUnitPrice: {}', [
+                    orderId,
+                    lendingMarket.openingUnitPrice.toString()
+                ]);
                 unitPrice = lendingMarket.openingUnitPrice;
             }
             initTransaction(

@@ -27,7 +27,7 @@ export const initOrder = (
     order.orderId = orderId;
     order.user = user.id;
     order.currency = currency;
-    order.side = 0;
+    order.side = side == 0 ? 0 : 1;
     order.maturity = maturity;
     order.inputUnitPrice = inputUnitPrice;
     order.filledAmount = filledAmount;
