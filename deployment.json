@@ -49,7 +49,7 @@
     "startBlock": 168608705,
     "isMajorUpdate": false,
     "isMinorUpdate": false,
-    "version": "0.1.1"
+    "version": "0.1.2"
   },
   "filecoin-mainnet": {
     "startBlock": 3998055,
