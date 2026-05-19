@@ -1,5 +1,5 @@
 import { Address, BigInt, Bytes } from '@graphprotocol/graph-ts';
-import { getOrInitLendingMarket } from '../../src/helper/initializer';
+import { getOrInitLendingMarket } from '../../src/initializers';
 
 export const ALICE = Address.fromString(
     '0xc0ffee254729296a45a3885639AC7E10F9d54979'

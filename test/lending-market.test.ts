@@ -6,8 +6,8 @@ import {
     describe,
     test,
 } from 'matchstick-as/assembly/index';
-import { getOrInitUser, getProtocol } from '../src/helper/initializer';
-import { handleOrderPartiallyFilled } from '../src/mappings/fund-management';
+
+import { getOrInitProtocol, getOrInitUser } from '../src/initializers';
 import {
     handleItayoseExecuted,
     handleOrderCanceled,
@@ -15,13 +15,14 @@ import {
     handleOrdersCleaned,
     handlePositionUnwound,
     handlePreOrderExecuted,
-} from '../src/mappings/lending-market';
+} from '../src/mappings';
+import { handleOrderPartiallyFilled } from '../src/mappings/order-partially-filled';
 import {
     getDailyVolumeEntityId,
     getOrderEntityId,
     getTransactionCandleStickEntityId,
-} from '../src/utils/id-generation';
-import { toBytes32 } from '../src/utils/string';
+} from '../src/utils/helper/id-generation';
+import { toBytes32 } from '../src/utils/helper/string';
 import {
     createItayoseExecutedEvent,
     createOrderCanceledEvent,
@@ -40,7 +41,7 @@ const maturity = BigInt.fromI32(1677628800); // 1st Mar 23
 const amount = BigInt.fromI32(90);
 const unitPrice = BigInt.fromI32(9000);
 const timestamp = BigInt.fromI64(1675878200);
-const intervals = [300, 900, 1800, 3600, 14400, 86400, 259200, 604800, 2592000];
+const INTERVALS = [300, 900, 1800, 3600, 14400, 86400, 259200, 604800, 2592000];
 
 describe('Order Executed', () => {
     beforeEach(() => {
@@ -93,7 +94,7 @@ describe('Order Executed', () => {
         assert.stringEquals(orders[0].id, id);
         assert.bigIntEquals(alice.createdAt, event.block.timestamp);
 
-        const protocol = getProtocol();
+        const protocol = getOrInitProtocol();
         assert.fieldEquals('Protocol', protocol.id, 'totalUsers', '1');
     });
 
@@ -1896,7 +1897,7 @@ describe('Transaction Candle Stick', () => {
         handleOrderExecuted(event);
 
         for (let i = 0; i < 4; i++) {
-            const interval = BigInt.fromI32(intervals[i]);
+            const interval = BigInt.fromI32(INTERVALS[i]);
 
             const epochTime = timestamp.div(interval);
             const id = getTransactionCandleStickEntityId(
@@ -1985,7 +1986,7 @@ describe('Transaction Candle Stick', () => {
             .div(filledAmount.plus(filledAmount2).toBigDecimal());
 
         for (let i = 0; i < 4; i++) {
-            const interval = BigInt.fromI32(intervals[i]);
+            const interval = BigInt.fromI32(INTERVALS[i]);
 
             const epochTime = timestamp.div(interval);
             const id = getTransactionCandleStickEntityId(
@@ -2060,8 +2061,8 @@ describe('Transaction Candle Stick', () => {
         );
         handlePositionUnwound(event);
 
-        for (let i = 0; i < intervals.length; i++) {
-            const interval = BigInt.fromI32(intervals[i]);
+        for (let i = 0; i < INTERVALS.length; i++) {
+            const interval = BigInt.fromI32(INTERVALS[i]);
             const epochTime = timestamp.div(interval);
             const id = getTransactionCandleStickEntityId(
                 ccy,
@@ -2149,8 +2150,8 @@ describe('Transaction Candle Stick', () => {
         );
         handleItayoseExecuted(itayoseExecutedEvent);
 
-        for (let i = 0; i < intervals.length; i++) {
-            const interval = BigInt.fromI32(intervals[i]);
+        for (let i = 0; i < INTERVALS.length; i++) {
+            const interval = BigInt.fromI32(INTERVALS[i]);
             const epochTime = timestamp.div(interval);
             const id = getTransactionCandleStickEntityId(
                 ccy,

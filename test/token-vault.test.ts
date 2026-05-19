@@ -6,10 +6,10 @@ import {
     describe,
     test,
 } from 'matchstick-as/assembly/index';
-import { handleDeposit, handleWithdraw } from '../src/mappings/token-vault';
-import { toBytes32, toBytes20 } from '../src/utils/string';
-import { ALICE } from './utils/createEntities';
+import { handleDeposit, handleWithdraw } from '../src/mappings';
+import { toBytes20, toBytes32 } from '../src/utils/helper/string';
 import { createDepositEvent, createWithdrawEvent } from './mocks';
+import { ALICE } from './utils/createEntities';
 
 const ccy = toBytes32('ETH');
 

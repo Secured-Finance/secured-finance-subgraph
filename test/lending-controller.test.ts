@@ -10,12 +10,11 @@ import {
 import {
     handleOrderBookCreated,
     handleOrderBooksRotated,
-} from '../src/mappings/lending-controller';
-import { buildLendingMarketId, toBytes32 } from '../src/utils/string';
+} from '../src/mappings';
+import { buildLendingMarketId, toBytes32 } from '../src/utils/helper/string';
 import {
     createOrderBookCreatedEvent,
     createOrderBooksRotatedEvent,
-    toArrayString,
 } from './mocks';
 
 const orderBookId = BigInt.fromI32(1);
